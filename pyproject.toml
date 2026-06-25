@@ -15,7 +15,8 @@ repository = "https://github.com/moira-andrews/tom_across"
 dynamic = ["version"]
 requires-python = ">=3.10,<3.14"
 dependencies = [
-    "tomtoolkit (>=3.0.0a10,<4.0.0)"
+    "tomtoolkit (>=3.0.0a10,<4.0.0)",
+    "across-client"
 ]
 
 [tool.poetry]
