@@ -1,6 +1,7 @@
 import django_tables2 as tables
+from tom_common.htmx_table import HTMXTable
 
-class ObservationTable(tables.Table):
+class ObservationTable(HTMXTable):
     telescope = tables.Column()
     instrument = tables.Column()
     exptime = tables.Column()
@@ -9,14 +10,7 @@ class ObservationTable(tables.Table):
     filter_name = tables.Column()
     wavelength_range = tables.Column()
 
-
-    class Meta:
-        template_name = "tom_across/observation_table.html"
-        orderable = True
-        attrs = {
-            "class": "table table-striped table-hover",
-            "id": "observation-table",
-        }
+    class Meta(HTMXTable.Meta):
         empty_text = "No observations found"
 
     def render_exptime(self, value):

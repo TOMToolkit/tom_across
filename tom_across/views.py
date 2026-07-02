@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
+from django.views.generic.list import ListView
+from tom_common.htmx_table import HTMXTableViewMixin
 
 from across.client import Client
 
@@ -17,18 +19,19 @@ class AcrossDashboardView(TemplateView):
     template_name = "tom_across/dashboard.html"
 
 
-def observation_table_view(request, target_id):
-    client = Client()
-    target = Target.objects.get(id=target_id)
+class ObservationTableView(HTMXTableViewMixin, ListView):
+    table_class = ObservationTable
+    template_name = "tom_across/observation_table.html"  # full-page template
+    paginate_by = 10
 
-    data = observation_rows(client, target)
-    table = ObservationTable(data)
+    def get_queryset(self):
+        client = Client()
+        target = Target.objects.get(id=self.kwargs["target_id"])
+        return observation_rows(client, target)
 
-    table.htmx_url = request.path
-
-    RequestConfig(request, paginate={"per_page": 10}).configure(table)
-
-    return render(request, "tom_across/partials/observation_table_partial.html", {
-        "table": table,
-        "target": target,
-    })
+    def get_context_data(self, **kwargs):
+        context = super(HTMXTableViewMixin, self).get_context_data(**kwargs)
+        context['record_count'] = context['paginator'].count
+        context['empty_database'] = not context['object_list']
+        context["target"] = Target.objects.get(id=self.kwargs["target_id"])
+        return context
