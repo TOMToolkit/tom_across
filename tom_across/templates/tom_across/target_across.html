@@ -1,8 +1,7 @@
-{% load across_extras %}
-
-<div class="card">
-  <div class="card-body">
-    <h4>ACROSS</h4>
-    {% observation_table %}
-  </div>
+<div id="obs-table"
+     hx-get="{% url 'observation-table' target.id %}"
+     hx-trigger="load"
+     hx-target="#obs-table"
+     hx-swap="innerHTML">
+    Loading Observations...
 </div>
