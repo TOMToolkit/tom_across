@@ -21,7 +21,7 @@ class AcrossDashboardView(TemplateView):
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
-    template_name = "tom_across/observation_table.html"  # full-page template
+    template_name = "tom_across/observation_table.html"
     paginate_by = 10
 
     def get_queryset(self):
