@@ -1,5 +1,5 @@
-<div id="obs-table"
-     hx-get="{% url 'observation-table' target.id %}"
+<div id="obs-table" class="table-container"
+     hx-get="{% url 'across:observation-table' target.id %}"
      hx-trigger="load"
      hx-target="#obs-table"
      hx-swap="innerHTML">

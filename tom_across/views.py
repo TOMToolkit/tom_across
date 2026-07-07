@@ -3,6 +3,8 @@ from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
 from django.views.generic.list import ListView
 from tom_common.htmx_table import HTMXTableViewMixin
+from django_tables2 import SingleTableView
+from django.urls import reverse
 
 from across.client import Client
 
@@ -14,15 +16,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-class AcrossDashboardView(TemplateView):
-    template_name = "tom_across/dashboard.html"
-
+class DemoView(TemplateView):
+    """
+    Generic demo view
+    """
+    template_name = "tom_across/demo_page.html"
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
     template_name = "tom_across/observation_table.html"
     paginate_by = 10
+    model = None
 
     def get_queryset(self):
         client = Client()

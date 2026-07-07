@@ -1,6 +1,6 @@
-{% extends "base.html" %}
 {% block content %}
-<div class="table-container">
-    {% include "tom_across/observation_table_partial.html" %}
+<div id="table-container" class="table-container"
+     hx-get="{% url 'across:observation-table' target_id=target.id %}"
+     hx-trigger="load">
 </div>
 {% endblock %}
