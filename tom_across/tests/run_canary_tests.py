@@ -2,7 +2,7 @@
 # django_shell.py
 
 from django.core.management import call_command
-from boot_django import boot_django, APP_NAME  # noqa
+from tom_across.tests.boot_django import boot_django, APP_NAME  # noqa
 
 
 boot_django()
