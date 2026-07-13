@@ -7,6 +7,5 @@ class ObservationFilterForm(forms.Form):
     wavelength_max = forms.FloatField(required=False)
     observation_type = forms.ChoiceField(
         required=False,
-        choices=[('', 'Any'), ('imaging', 'Imaging'), ('timing', 'Timing'),
-                ('spectroscopy', 'Spectroscopy'), ('slew', 'Slew')]
+        choices=[('', 'Any'), ('imaging', 'Imaging'), ('spectroscopy', 'Spectroscopy')]
     )
