@@ -40,6 +40,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
                 'end_date': form.cleaned_data.get('end_date'),
                 'wavelength_min': form.cleaned_data.get('wavelength_min'),
                 'wavelength_max': form.cleaned_data.get('wavelength_max'),
+                'wavelength_type': form.cleaned_data.get('wavelength_type'),
                 'obs_type': form.cleaned_data.get('observation_type') or None,
             }
             filters = {k: v for k, v in filters.items() if v not in (None, '')}

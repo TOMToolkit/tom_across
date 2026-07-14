@@ -7,7 +7,7 @@ import hashlib
 
 logger = logging.getLogger(__name__)
 
-def observation_rows(client, target, start_date=None, end_date=None,
+def observation_rows(client, target, start_date=None, end_date=None, wavelength_type=None,
                       wavelength_min=None, wavelength_max=None, obs_type=None):
     kwargs = dict(
         status="planned",
@@ -19,13 +19,17 @@ def observation_rows(client, target, start_date=None, end_date=None,
         kwargs['date_range_begin'] = start_date
     if end_date:
         kwargs['date_range_end'] = end_date
+    if wavelength_type:
+        kwargs['bandpass_type'] = wavelength_type
     if wavelength_min:
         kwargs['bandpass_min'] = wavelength_min
     if wavelength_max:
         kwargs['bandpass_max'] = wavelength_max
     if obs_type:
         kwargs['type'] = obs_type
-    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{obs_type}"
+
+    logger.info(f'kwargs: {kwargs}')
+    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}"
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows is not None:
