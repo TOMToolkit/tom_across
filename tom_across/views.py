@@ -36,7 +36,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
 
     def get_queryset(self):
         client = Client()
-        target = Target.objects.get(id=self.kwargs["pk"])
+        target = Target.objects.get(id=self.kwargs["target_id"])
         form = ObservationFilterForm(self.request.GET or None)
         filters = {}
         if form.is_valid():
@@ -55,7 +55,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
         context = super(HTMXTableViewMixin, self).get_context_data(**kwargs)
         context['record_count'] = context['paginator'].count
         context['empty_database'] = not context['object_list']
-        context["target"] = Target.objects.get(id=self.kwargs["pk"])
+        context["target"] = Target.objects.get(id=self.kwargs["target_id"])
         context["filter_form"] = ObservationFilterForm(self.request.GET or None)
         return context
 
