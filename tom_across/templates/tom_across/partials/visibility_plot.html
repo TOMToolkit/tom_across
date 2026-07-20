@@ -1,54 +1,20 @@
-<form hx-get="{% url 'across:visibility-plot' target.id %}"
-      hx-target="#visibility-plot-wrapper"
-      hx-swap="innerHTML"
-      class="mb-3">
-    <label>Observatories:
-        <select name="observatories" multiple class="form-select">
-            {% for value, label in form.fields.observatories.choices %}
-            <option value="{{ value }}" {% if value in form.observatories.value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </label>
-    <label>Begin: <input type="datetime-local" name="begin" class="form-control" value="{{ form.begin.value|date:'Y-m-d\TH:i' }}"></label>
-    <label>End: <input type="datetime-local" name="end" class="form-control" value="{{ form.end.value|date:'Y-m-d\TH:i' }}"></label>
-    <button type="submit" class="btn btn-primary mt-2">Update</button>
-</form>
+{% load crispy_forms_tags %}
 
 <div id="visibility-plot-wrapper">
-    {% for obs in observatory_list %}
-    <label><input type="checkbox" class="obs-toggle" value="{{ obs }}" checked> {{ obs }}</label>
-    {% endfor %}
-
-    {% for key, plot_html in figures_by_combo %}
-    <div class="visibility-combo" data-combo-key="{{ key }}" style="display:none;">
-        {{ plot_html|safe }}
-    </div>
-    {% endfor %}
-
-    <script>
-    function updatePlot() {
-        const checked = Array.from(document.querySelectorAll('.obs-toggle:checked'))
-                              .map(cb => cb.value)
-                              .sort();
-        const key = checked.join(",");
-        document.querySelectorAll('.visibility-combo').forEach(div => {
-            const isVisible = (div.dataset.comboKey === key);
-            div.style.display = isVisible ? 'block' : 'none';
-            if (isVisible) {
-                const plotDiv = div.querySelector('.js-plotly-plot');
-                if (plotDiv) Plotly.Plots.resize(plotDiv);
-            }
-        });
-    }
-    document.querySelectorAll('.obs-toggle').forEach(cb => cb.addEventListener('change', updatePlot));
-    updatePlot();
-    window.addEventListener('resize', () => {
-        document.querySelectorAll('.visibility-combo').forEach(div => {
-            if (div.style.display !== 'none') {
-                const plotDiv = div.querySelector('.js-plotly-plot');
-                if (plotDiv) Plotly.Plots.resize(plotDiv);
-            }
-        });
-    });
-    </script>
+    {{ plot_html|safe }}
 </div>
+
+<form hx-get="{% url 'across:visibility-plot' target.id %}" 
+      hx-target="#visibility-plot-wrapper" 
+      hx-swap="innerHTML" 
+      hx-indicator="#plot-spinner" 
+      hx-disabled-elt="#update-btn" 
+      class="mb-3">
+    {% crispy form %} 
+    <details class="mb-4 card card-body py-2 px-3">
+        <summary class="cursor-pointer">Observatories</summary>
+        <div class="mt-2">
+            {{ form.observatories|as_crispy_field }}
+        </div>
+    </details>
+</form>
