@@ -47,6 +47,3 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
         context['target'] = Target.objects.get(id=self.kwargs['target_id'])
         context['filter_form'] = ObservationFilterForm(self.request.GET or None)
         return context
-
-class AcrossDashboardView(TemplateView):
-    template_name = "tom_across/dashboard.html"

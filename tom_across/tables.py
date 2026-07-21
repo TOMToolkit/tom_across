@@ -1,7 +1,9 @@
 import django_tables2 as tables
 from tom_common.htmx_table import HTMXTable
 from django.urls import reverse
+import logging
 
+logger = logging.getLogger(__name__)
 class ObservationTable(HTMXTable):
     telescope = tables.Column()
     instrument = tables.Column()
@@ -33,3 +35,10 @@ class ObservationTable(HTMXTable):
             return f"{float(value):.2f}"
         except (ValueError, TypeError):
             return value
+
+    def render_wavelength_range(self, value):
+            try:
+                logger.info(f'{value}')
+                return f"{float(value[0]):.2f} - {float(value[1]):.2f}"
+            except (ValueError, TypeError):
+                return value

@@ -28,9 +28,6 @@ class ObservationFilterForm(forms.Form):
     cone_radius = forms.FloatField(required=False, label='Cone Radius')
 
     def __init__(self, *args, **kwargs):
-        min_date = kwargs.pop('start_date', None)
-        max_date = kwargs.pop('end_date', None)
-        logger.info(f'min and max date from initial? {min_date} {max_date}')
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()
