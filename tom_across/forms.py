@@ -1,6 +1,6 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, HTML
+from crispy_forms.layout import Layout, Row, Column, HTML, Field
 
 import logging
 
@@ -28,8 +28,15 @@ class VisibilityPlotForm(forms.Form):
                         'Update <span id="plot-spinner" class="htmx-indicator spinner-border spinner-border-sm ms-1" role="status"></span>'
                         '</button>'
                     ),
-                    css_class='col-md-4 d-flex align-items-end mb-3' 
+                    css_class='col-md-4 d-flex align-items-end mb-3'
                 ),
-                css_class='row g-3' 
-            )
+                css_class='row g-3'
+            ),
+            HTML(
+                '<details class="mb-4 card card-body py-2 px-3">'
+                '<summary class="cursor-pointer">Observatories</summary>'
+                '<div class="mt-2">'
+            ),
+            Field('observatories', css_class='row row-cols-1 row-cols-md-3'),
+            HTML('</div></details>'),
         )

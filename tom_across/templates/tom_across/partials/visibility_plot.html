@@ -4,17 +4,11 @@
     {{ plot_html|safe }}
 </div>
 
-<form hx-get="{% url 'across:visibility-plot' target.id %}" 
-      hx-target="#visibility-plot-wrapper" 
-      hx-swap="innerHTML" 
-      hx-indicator="#plot-spinner" 
-      hx-disabled-elt="#update-btn" 
+<form hx-get="{% url 'across:visibility-plot' target.id %}"
+      hx-target="#visibility-plot-wrapper"
+      hx-swap="innerHTML"
+      hx-indicator="#plot-spinner"
+      hx-disabled-elt="#update-btn"
       class="mb-3">
-    {% crispy form %} 
-    <details class="mb-4 card card-body py-2 px-3">
-        <summary class="cursor-pointer">Observatories</summary>
-        <div class="mt-2">
-            {{ form.observatories|as_crispy_field }}
-        </div>
-    </details>
+    {% crispy form %}
 </form>
