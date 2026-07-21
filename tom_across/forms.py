@@ -41,7 +41,7 @@ class ObservationFilterForm(forms.Form):
     observation_type = forms.ChoiceField(
         required=False,
         label='Observation type',
-        choices=[('', 'Any')] + [(t.value, t.value.title()) for t in ['Imaging', 'Spectroscopy']]
+        choices=[('Any','Imaging', 'Spectroscopy')]
     )
 
     def __init__(self, *args, **kwargs):
