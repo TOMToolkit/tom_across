@@ -11,7 +11,7 @@
                   hx-get="{{ table.get_table_action_url }}{% querystring_replace table.prefixed_order_by_field=column.order_by_alias.next %}"
                   hx-trigger="click"
                   hx-target="#observation-table-wrapper"
-                  hx-swap="outerHTML"
+                  hx-swap="innerHTML"
                   hx-indicator="#observation-progress"
                   style="cursor: pointer;">
                   {{ column.header }}
@@ -28,7 +28,7 @@
         <div hx-get="{{ table.get_table_action_url }}{% querystring_replace table.prefixed_page_field=table.page.previous_page_number %}"
              hx-trigger="click"
              hx-target="#observation-table-wrapper"
-             hx-swap="outerHTML"
+             hx-swap="innerHTML"
              hx-indicator="#observation-progress"
              class="page-link">
             <span aria-hidden="true">&laquo;</span>
@@ -43,7 +43,7 @@
                  {% if p != '...' %}hx-get="{{ table.get_table_action_url }}{% querystring_replace table.prefixed_page_field=p %}"{% endif %}
                  hx-trigger="click"
                  hx-target="#observation-table-wrapper"
-                 hx-swap="outerHTML"
+                 hx-swap="innerHTML"
                  hx-indicator="#observation-progress">
                 {{ p }}
             </div>
@@ -55,7 +55,7 @@
         <div hx-get="{{ table.get_table_action_url }}{% querystring_replace table.prefixed_page_field=table.page.next_page_number %}"
              hx-trigger="click"
              hx-target="#observation-table-wrapper"
-             hx-swap="outerHTML"
+             hx-swap="innerHTML"
              hx-indicator="#observation-progress"
              class="page-link">
             {% trans 'next' %}
