@@ -8,14 +8,3 @@
         Loading Observations...
     </div>
 </div>
-
-<div class="card mt-3">
-    <div class="card-header">Visibility</div>
-    <div class="card-body" id="visibility-plot-wrapper"
-         hx-get="{% url 'across:visibility-plot' target.id %}"
-         hx-trigger="load"
-         hx-target="#visibility-plot-wrapper"
-         hx-swap="innerHTML">
-        Loading visibility...
-    </div>
-</div>
