@@ -17,7 +17,8 @@ def visibility_from_instrument(target, client, observatory_list, date_range_begi
     ra, dec = target.ra, target.dec
     logger.info('getting instrument observatory name cache')
     obs_names_to_instr_ids = get_inst_ids_from_observatory_name(client)
-    inst_ids = [obs_names_to_instr_ids[name] for name in observatory_list if name in obs_names_to_instr_ids]
+    selected_observatories = [(name, obs_names_to_instr_ids[name]) for name in observatory_list if name in obs_names_to_instr_ids]
+    inst_ids = [inst_id for _, inst_id in selected_observatories]
     logger.info('gotten')
 
     now = date_range_begin
@@ -38,9 +39,9 @@ def visibility_from_instrument(target, client, observatory_list, date_range_begi
     fig = make_subplots(rows=len(inst_ids), cols=1, shared_xaxes=True, vertical_spacing=0)
     color = ["#4C9CA8", "#B7E1E7"]
 
-    for i, inst_id in enumerate(inst_ids):
+    for i, (selected_name, inst_id) in enumerate(selected_observatories):
         obs_vis_windows = joint.observatory_visibility_windows[inst_id]
-        observatory_name = None
+        observatory_name = selected_name
         for obs_vis_window in obs_vis_windows:
             observatory_max_vis = obs_vis_window.max_visibility_duration
             observatory_window = obs_vis_window.window
@@ -60,6 +61,15 @@ def visibility_from_instrument(target, client, observatory_list, date_range_begi
                 text=f"{observatory_name}<br>{observatory_window.begin.datetime} – {observatory_window.end.datetime}<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours",
                 showlegend=False,
             ), row=i+1, col=1)
+
+        if not obs_vis_windows:
+            fig.add_trace(go.Scatter(
+                x=[0, day_range_hours], y=[0, 0],
+                mode="lines",
+                line=dict(color="rgba(0,0,0,0)"),
+                hoverinfo="skip",
+                showlegend=False,
+            ), row=i + 1, col=1)
 
         fig.update_yaxes(title_text=observatory_name, showgrid=False, showticklabels=False, range=[0, 1], row=i+1, col=1)
 
