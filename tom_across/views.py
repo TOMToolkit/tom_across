@@ -34,7 +34,8 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
                 'wavelength_min': form.cleaned_data.get('wavelength_min'),
                 'wavelength_max': form.cleaned_data.get('wavelength_max'),
                 'wavelength_type': form.cleaned_data.get('wavelength_type'),
-                'obs_type': form.cleaned_data.get('observation_type') or None,
+                'obs_type': form.cleaned_data.get('observation_type'),
+                'cone_search_radius': form.cleaned_data.get('cone_radius'),
             }
             filters = {k: v for k, v in filters.items() if v not in (None, '')}
         return observation_rows(client, target, **filters)
@@ -43,8 +44,8 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
         context = super(HTMXTableViewMixin, self).get_context_data(**kwargs)
         context['record_count'] = context['paginator'].count
         context['empty_database'] = not context['object_list']
-        context["target"] = Target.objects.get(id=self.kwargs["target_id"])
-        context["filter_form"] = ObservationFilterForm(self.request.GET or None)
+        context['target'] = Target.objects.get(id=self.kwargs['target_id'])
+        context['filter_form'] = ObservationFilterForm(self.request.GET or None)
         return context
 
 def visibility_plot_view(request, pk):

@@ -13,7 +13,7 @@ from plotly.subplots import make_subplots
 logger = logging.getLogger(__name__)
 
 def observation_rows(client, target, start_date=None, end_date=None, wavelength_type=None,
-                      wavelength_min=None, wavelength_max=None, obs_type=None):
+                      wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
     kwargs = dict(
         status="planned",
         cone_search_ra=target.ra,
@@ -32,9 +32,11 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
         kwargs['bandpass_max'] = wavelength_max
     if obs_type:
         kwargs['type'] = obs_type
+    if cone_search_radius:
+        kwargs['cone_search_radius'] = cone_search_radius
 
     logger.info(f'kwargs: {kwargs}')
-    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}"
+    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows is not None:
