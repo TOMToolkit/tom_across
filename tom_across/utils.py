@@ -36,6 +36,7 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows is not None:
+        logger.info(f'pulling from cache')
         return rows
 
     rows = []
@@ -49,7 +50,6 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
             band = obs.bandpass.to_dict().get('filter_name')
             min_band = obs.bandpass.to_dict().get('min')
             max_band = obs.bandpass.to_dict().get('max')
-            logger.info(f'{min_band}, {max_band}')
             rows.append({
                 'telescope': tele,
                 'instrument': inst,
@@ -57,7 +57,7 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
                 'date': obs.date_range.end,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
-                'wavelength_range': [min_band, max_band]
+                'wavelength_range': (min_band, max_band)
             })
     except ServiceException as e:
         if "504" in str(e) or "Gateway Timeout" in str(e):
