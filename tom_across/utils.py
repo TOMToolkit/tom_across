@@ -86,10 +86,11 @@ def visibility_from_instrument(target, client, observatory_list, date_range_begi
     cached_context = cache.get(cache_key)
     logger.info(f'cache_key: {cache_key}')
     if cached_context:
+        logger.info('cache exists, pulling from cached context')
         return {**cached_context, 'target': target}
 
     logger.info(f'instrument ids {inst_ids}, ra {ra}, dec {dec}, date_range_begin {date_range_begin}, date_range_end {date_range_end}')
-    joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end)
+    joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=True)
     observatory_name_cache = get_observatory_name_id_map(client)
 
     fig = make_subplots(rows=len(inst_ids), cols=1, shared_xaxes=True, vertical_spacing=0)
