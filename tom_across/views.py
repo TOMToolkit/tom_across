@@ -1,16 +1,10 @@
 import json
 from datetime import datetime, timedelta, timezone
-from itertools import combinations
 
-from django.core.cache import cache
 from django.conf import settings
 from django.shortcuts import render
-from django.urls import reverse
 from django.views.generic import TemplateView
 from django.views.generic.list import ListView
-from plotly import graph_objs as go
-from plotly import offline
-from plotly.subplots import make_subplots
 
 from across.client import Client
 from tom_common.htmx_table import HTMXTableViewMixin
@@ -21,12 +15,6 @@ from tom_across.utils import observation_rows, get_observatory_name_id_map, visi
 import logging
 
 logger = logging.getLogger(__name__)
-
-class DemoView(TemplateView):
-    """
-    Generic demo view
-    """
-    template_name = "tom_across/demo_page.html"
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable

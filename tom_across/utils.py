@@ -5,7 +5,6 @@ import logging
 from importlib import resources
 import hashlib
 from datetime import datetime, timedelta
-from itertools import combinations
 from plotly import graph_objs as go
 from plotly import offline
 from plotly.subplots import make_subplots
