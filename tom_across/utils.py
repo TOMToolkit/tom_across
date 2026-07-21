@@ -74,17 +74,22 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
 def visibility_from_instrument(target, client, observatory_list, date_range_begin=datetime.now(), date_range_end=datetime.now() + timedelta(hours=24)):
 
     ra, dec = target.ra, target.dec
+    logger.info('getting instrument observatory name cache')
     obs_names_to_instr_ids = get_inst_ids_from_observatory_name(client)
     inst_ids = [obs_names_to_instr_ids[name] for name in observatory_list if name in obs_names_to_instr_ids]
+    logger.info('gotten')
 
     now = date_range_begin
     day_range_hours = (date_range_end - date_range_begin).total_seconds() / 3600
 
+    logger.info('does cache exist?')
     cache_key = (f"visibility_plot_{target.id}_{'_'.join(sorted(observatory_list))}_{date_range_begin.isoformat()}_{date_range_end.isoformat()}")
     cached_context = cache.get(cache_key)
+    logger.info(f'cache_key: {cache_key}')
     if cached_context:
         return {**cached_context, 'target': target}
 
+    logger.info(f'instrument ids {inst_ids}, ra {ra}, dec {dec}, date_range_begin {date_range_begin}, date_range_end {date_range_end}')
     joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end)
     observatory_name_cache = get_observatory_name_id_map(client)
 
