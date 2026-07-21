@@ -16,6 +16,11 @@ class ObservationTable(HTMXTable):
     class Meta(HTMXTable.Meta):
         model = None
         empty_text = "No observations found"
+        attrs = {
+            **HTMXTable.Meta.attrs,
+            "hx-target": "#observation-table-wrapper",
+            "hx-swap": "outerHTML",
+        }
     
     partial_template_name = 'tom_across/partials/observation_table_partial.html'
 

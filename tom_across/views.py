@@ -17,12 +17,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class DemoView(TemplateView):
-    """
-    Generic demo view
-    """
-    template_name = "tom_across/demo_page.html"
-
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
     template_name = "tom_across/observation_table.html"
