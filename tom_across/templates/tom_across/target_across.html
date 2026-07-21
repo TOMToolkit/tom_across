@@ -1,5 +1,13 @@
+{% load across_extras %}
 <div class="card">
-    <div class="card-header">Observations</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Observations</span>
+        <a class="btn btn-sm btn-primary"
+           href="{% across_app_observations_url target %}"
+           target="_blank" rel="noopener noreferrer">
+            View in ACROSS
+        </a>
+    </div>
     <div class="card-body" id="obs-table"
          hx-get="{% url 'across:observation-table' target.id %}"
          hx-trigger="load"

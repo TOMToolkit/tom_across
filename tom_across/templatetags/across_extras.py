@@ -1,0 +1,20 @@
+from urllib.parse import urlencode
+
+from django import template
+from django.conf import settings
+
+register = template.Library()
+
+DEFAULT_ACROSS_APP_URL = 'app.across.sciencecloud.nasa.gov'
+
+DEFAULT_CONE_SEARCH_RADIUS = 0.01
+
+@register.simple_tag
+def across_app_observations_url(target, radius=DEFAULT_CONE_SEARCH_RADIUS):
+    base = getattr(settings, 'ACROSS_APP_URL', DEFAULT_ACROSS_APP_URL)
+    query = urlencode({
+        'cone_search_ra': f'{target.ra:f}',
+        'cone_search_dec': f'{target.dec:f}',
+        'cone_search_radius': radius,
+    })
+    return f'{base}/observations?{query}'
