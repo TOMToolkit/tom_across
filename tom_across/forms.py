@@ -14,46 +14,20 @@ WAVELENGTH_TYPE_CHOICES = [
 
 
 class ObservationFilterForm(forms.Form):
-    start_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
-    end_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
-    wavelength_type = forms.ChoiceField(
-        required=False,
-        label='Unit',
-        choices=WAVELENGTH_TYPE_CHOICES,
-        widget=forms.Select(attrs={'data-wavelength-unit': ''})
-    )
-    wavelength_min = forms.FloatField(
-        required=False,
-        label='Min',
-        widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Min'})
-    )
-    wavelength_max = forms.FloatField(
-        required=False,
-        label='Max',
-        widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Max'})
-    )
-    observation_type = forms.ChoiceField(
-        required=False,
-        label='Observation type',
-        choices=[
-                ('', 'Any'),
-                ('Imaging', 'Imaging'),
-                ('Spectroscopy', 'Spectroscopy'),
-            ]
-    )
+    start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    wavelength_type = forms.ChoiceField(required=False, label='Unit', choices=WAVELENGTH_TYPE_CHOICES,
+                                        widget=forms.Select(attrs={'data-wavelength-unit': ''}))
+    wavelength_min = forms.FloatField(required=False, label='Min',
+                                      widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Min'}))
+    wavelength_max = forms.FloatField(required=False, label='Max',
+                                      widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Max'}))
+    observation_type = forms.ChoiceField(required=False, label='Observation type',
+                                         choices=[('', 'Any'), ('Imaging', 'Imaging'),
+                                                  ('Spectroscopy', 'Spectroscopy')])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.fields['wavelength_type'].widget.attrs['data-previous-unit'] = (
-            self._selected_wavelength_type()
-        )
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -82,12 +56,6 @@ class ObservationFilterForm(forms.Form):
                 css_class='row g-3'
             ),
         )
-
-    def _selected_wavelength_type(self):
-        default = WAVELENGTH_TYPE_CHOICES[0][0]
-        if self.is_bound:
-            return self.data.get('wavelength_type') or default
-        return self.initial.get('wavelength_type') or default
 
     def clean(self):
         cleaned_data = super().clean()
