@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 class VisibilityPlotForm(forms.Form):
     observatories = forms.MultipleChoiceField(required=True, widget=forms.CheckboxSelectMultiple, label=False)
-    begin = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
-    end = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
+    begin = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
+    end = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
 
     def __init__(self, *args, observatory_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
