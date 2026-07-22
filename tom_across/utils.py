@@ -4,8 +4,6 @@ from plotly import graph_objs as go
 from plotly import offline
 from plotly.subplots import make_subplots
 from across.sdk.v1.exceptions import ServiceException
-import json
-from importlib import resources
 import hashlib
 from django.conf import settings
 from across.client import Client
@@ -185,11 +183,7 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
                 'wavelength_range': (min_band, max_band)
             })
     except ServiceException as e:
-        if "504" in str(e) or "Gateway Timeout" in str(e):
-            with resources.open_text('tom_across.test_files', 'test_response.json') as file:
-                rows = json.load(file)
-        else:
-            logger.info(f'Other error: {e}')
+        logger.info(f'Loading error: {e}')
 
     cache.set(cache_key, rows, timeout=24 * 60 * 60)
     return rows
