@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from django.shortcuts import render
 
-from across.client import Client
 from tom_targets.models import Target
 from tom_across.forms import VisibilityPlotForm
 from tom_across.utils import get_observatory_name_id_map, visibility_from_instrument
@@ -16,8 +15,7 @@ def visibility_plot_view(request, pk):
     if target.type != 'SIDEREAL':
         return render(request, 'tom_across/partials/visibility_plot.html', {'plot': None})
     
-    client = Client()
-    names = sorted(set(get_observatory_name_id_map(client).values()))
+    names = sorted(set(get_observatory_name_id_map().values()))
     observatory_choices = [(n, n) for n in names]
     now = datetime.now()
     default_observatories = settings.ACROSS_VIS_OBSERVATORIES if settings.ACROSS_VIS_OBSERVATORIES else ['HST', 'JWST', 'Swift']
@@ -34,6 +32,6 @@ def visibility_plot_view(request, pk):
     else:
         observatory_list, date_range_begin, date_range_end = defaults['observatories'], defaults['begin'], defaults['end']
 
-    context = visibility_from_instrument(target, client, observatory_list, date_range_begin = date_range_begin, date_range_end = date_range_end)
+    context = visibility_from_instrument(target, observatory_list, date_range_begin = date_range_begin, date_range_end = date_range_end)
     context['form'] = form
     return render(request, 'tom_across/partials/visibility_plot.html', context)

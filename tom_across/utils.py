@@ -1,40 +1,35 @@
 from django.core.cache import cache
-from across.sdk.v1.exceptions import ServiceException
-import json
-import logging
-from importlib import resources
-import hashlib
 from datetime import datetime, timedelta
 from plotly import graph_objs as go
 from plotly import offline
 from plotly.subplots import make_subplots
+from across.client import Client
+client = Client()
 
-
+import logging
 logger = logging.getLogger(__name__)
 
-def visibility_from_instrument(target, client, observatory_list, date_range_begin=datetime.now(), date_range_end=datetime.now() + timedelta(hours=24)):
+def visibility_from_instrument(target, observatory_list, date_range_begin=datetime.now(), date_range_end=datetime.now() + timedelta(hours=24)):
 
     ra, dec = target.ra, target.dec
-    logger.info('getting instrument observatory name cache')
-    obs_names_to_instr_ids = get_inst_ids_from_observatory_name(client)
+    obs_names_to_instr_ids = get_inst_ids_from_observatory_name()
     selected_observatories = [(name, obs_names_to_instr_ids[name]) for name in observatory_list if name in obs_names_to_instr_ids]
     inst_ids = [inst_id for _, inst_id in selected_observatories]
-    logger.info('gotten')
 
     now = date_range_begin
     day_range_hours = (date_range_end - date_range_begin).total_seconds() / 3600
 
-    logger.info('does cache exist?')
-    cache_key = (f"visibility_plot_{target.id}_{'_'.join(sorted(observatory_list))}_{date_range_begin.isoformat()}_{date_range_end.isoformat()}")
+    cache_key = (f"visibility_plot_{target.id}_{'_'.join(sorted(observatory_list))}_"
+                 f"{date_range_begin.replace(minute=date_range_begin.minute // 5 * 5, second=0, microsecond=0).isoformat()}"
+                 f"_{date_range_end.replace(minute=date_range_end.minute // 5 * 5, second=0, microsecond=0).isoformat()}")
     cached_context = cache.get(cache_key)
-    logger.info(f'cache_key: {cache_key}')
     if cached_context:
         logger.info('cache exists, pulling from cached context')
         return {**cached_context, 'target': target}
 
     logger.info(f'instrument ids {inst_ids}, ra {ra}, dec {dec}, date_range_begin {date_range_begin}, date_range_end {date_range_end}')
     joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=True)
-    observatory_name_cache = get_observatory_name_id_map(client)
+    observatory_name_cache = get_observatory_name_id_map()
 
     fig = make_subplots(rows=len(inst_ids), cols=1, shared_xaxes=True, vertical_spacing=0)
     color = ["#4C9CA8", "#B7E1E7"]
@@ -93,7 +88,7 @@ def visibility_from_instrument(target, client, observatory_list, date_range_begi
 
     return {**cacheable_context, 'target': target}
 
-def get_observatory_name_id_map(client):
+def get_observatory_name_id_map():
     """
     Build name/short_name to observatory_id map.
     Cached for 24 hours, refreshed on cache miss.
@@ -106,7 +101,7 @@ def get_observatory_name_id_map(client):
         cache.set(cache_key, data, timeout=24 * 60 * 60)
     return data
 
-def get_inst_ids_from_observatory_name(client):
+def get_inst_ids_from_observatory_name():
     """
     Build unique name/short_name list for observatory,
     telescope, and instrument to instrument_id map.
