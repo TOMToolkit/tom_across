@@ -4,7 +4,8 @@ A TOM Toolkit app that integrates ACROSS functionality and features into the tar
 
 ## example settings.py variables for deployment
 
-`ACROSS_OBSERVATION_DEFAULT_ARGS = 
+Default arguments to be passed through to make the observation table on page load
+`ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.01}`
 
 URL for the across app to link the observations table and visibility tool.
 `ACROSS_APP_URL = 'https://app.across.sciencecloud.nasa.gov'`
