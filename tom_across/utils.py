@@ -1,21 +1,20 @@
 from django.core.cache import cache
 from across.sdk.v1.exceptions import ServiceException
 import json
-import logging
 from importlib import resources
 import hashlib
-
+from django.conf import settings
+import logging
 
 logger = logging.getLogger(__name__)
 
+ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.01}
 def observation_rows(client, target, start_date=None, end_date=None, wavelength_type=None,
                       wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
-    kwargs = dict(
-        status="planned",
-        cone_search_ra=target.ra,
-        cone_search_dec=target.dec,
-        cone_search_radius=0.01,
-    )
+    kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
+    kwargs['cone_search_ra'] = target.ra
+    kwargs['cone_search_dec'] = target.dec
+
     if start_date:
         kwargs['date_range_begin'] = start_date
     if end_date:
