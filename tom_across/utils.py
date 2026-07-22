@@ -135,7 +135,7 @@ def get_inst_ids_from_observatory_name():
     return data
 
 ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.01}
-def observation_rows(client, target, start_date=None, end_date=None, wavelength_type=None,
+def observation_rows(target, start_date=None, end_date=None, wavelength_type=None,
                       wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
     kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
     kwargs['cone_search_ra'] = target.ra
@@ -169,7 +169,7 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
         results = client.observation.get_many(**kwargs)
 
         
-        instrument_cache = get_across_instrument_ids(client)
+        instrument_cache = get_across_instrument_ids()
         for obs in results.items:
             inst, tele = instrument_cache[obs.instrument_id]
             band = obs.bandpass.to_dict().get('filter_name')
@@ -194,7 +194,7 @@ def observation_rows(client, target, start_date=None, end_date=None, wavelength_
     cache.set(cache_key, rows, timeout=24 * 60 * 60)
     return rows
 
-def get_across_instrument_ids(client):
+def get_across_instrument_ids():
     """
     Build a dictionary of ACROSS instrument IDs and their corresponding names.
     This is used to look up instruments by ID on other requests to the ACROSS API.
