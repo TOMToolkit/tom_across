@@ -18,7 +18,7 @@ def visibility_plot_view(request, pk):
     names = sorted(set(get_observatory_name_id_map().values()))
     observatory_choices = [(n, n) for n in names]
     now = datetime.now()
-    default_observatories = settings.ACROSS_VIS_OBSERVATORIES if settings.ACROSS_VIS_OBSERVATORIES else ['HST', 'JWST', 'Swift']
+    default_observatories = settings.ACROSS_VIS_OBSERVATORIES if hasattr(settings, 'ACROSS_VIS_OBSERVATORIES') else ['HST', 'JWST', 'Swift']
     defaults = {'observatories': default_observatories, 'begin': now, 'end': now + timedelta(hours=24)}
     form = VisibilityPlotForm(request.GET or defaults, observatory_choices=observatory_choices)
     if form.is_valid():
