@@ -1,0 +1,16 @@
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+<div id="observation-table-wrapper">
+  <form hx-get="{% url 'across:observation-table' target.id %}"
+        hx-target="#observation-table-wrapper"
+        hx-swap="outerHTML"
+        hx-indicator="#observation-progress">
+    {% crispy filter_form %}
+  </form>
+
+  <div class="progress" id="observation-progress">
+    <div class="indeterminate"></div>
+  </div>
+
+  {% render_table table "tom_across/partials/observation_table_bootstrap_htmx.html" %}
+</div>

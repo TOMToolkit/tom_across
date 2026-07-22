@@ -3,6 +3,9 @@ from datetime import datetime, timedelta
 from plotly import graph_objs as go
 from plotly import offline
 from plotly.subplots import make_subplots
+from across.sdk.v1.exceptions import ServiceException
+import hashlib
+from django.conf import settings
 from across.client import Client
 client = Client()
 
@@ -126,5 +129,79 @@ def get_inst_ids_from_observatory_name():
                         data[name] = inst.id
 
         cache.set(cache_key, data, timeout=24 * 60 * 60)
+
+    return data
+
+ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.01}
+def observation_rows(target, start_date=None, end_date=None, wavelength_type=None,
+                      wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
+    kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
+    kwargs['cone_search_ra'] = target.ra
+    kwargs['cone_search_dec'] = target.dec
+
+    if start_date:
+        kwargs['date_range_begin'] = start_date
+    if end_date:
+        kwargs['date_range_end'] = end_date
+    if wavelength_type:
+        kwargs['bandpass_type'] = wavelength_type
+    if wavelength_min:
+        kwargs['bandpass_min'] = wavelength_min
+    if wavelength_max:
+        kwargs['bandpass_max'] = wavelength_max
+    if obs_type:
+        kwargs['type'] = obs_type
+    if cone_search_radius:
+        kwargs['cone_search_radius'] = cone_search_radius
+
+    logger.info(f'kwargs: {kwargs}')
+    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
+    cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
+    rows = cache.get(cache_key)
+    if rows is not None:
+        logger.info(f'pulling from cache')
+        return rows
+
+    rows = []
+    try:
+        results = client.observation.get_many(**kwargs)
+
+        
+        instrument_cache = get_across_instrument_ids()
+        for obs in results.items:
+            inst, tele = instrument_cache[obs.instrument_id]
+            band = obs.bandpass.to_dict().get('filter_name')
+            min_band = obs.bandpass.to_dict().get('min')
+            max_band = obs.bandpass.to_dict().get('max')
+            rows.append({
+                'telescope': tele,
+                'instrument': inst,
+                'exptime': obs.exposure_time,
+                'date': obs.date_range.end,
+                'type': getattr(obs.type, 'value', obs.type),
+                'filter_name': band,
+                'wavelength_range': (min_band, max_band)
+            })
+    except ServiceException as e:
+        logger.info(f'Loading error: {e}')
+
+    cache.set(cache_key, rows, timeout=24 * 60 * 60)
+    return rows
+
+def get_across_instrument_ids():
+    """
+    Build a dictionary of ACROSS instrument IDs and their corresponding names.
+    This is used to look up instruments by ID on other requests to the ACROSS API.
+    Cached for 24 hours, refreshed on cache miss.
+    """
+    cache_key = "across_instrument_id_map"
+    data = cache.get(cache_key)
+
+    if data is None:
+        print('GETTING INST IDS FROM ACROSS')
+        instruments = client.instrument.get_many()
+        data = {instrument.id: [instrument.name,instrument.telescope.name] for instrument in instruments}
+
+        cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
 
     return data
