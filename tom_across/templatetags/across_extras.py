@@ -5,7 +5,7 @@ from django.conf import settings
 
 register = template.Library()
 
-DEFAULT_ACROSS_APP_URL = 'app.across.sciencecloud.nasa.gov'
+DEFAULT_ACROSS_APP_URL = 'https://app.across.sciencecloud.nasa.gov'
 
 @register.simple_tag
 def across_app_visibility_url(target, hi_res=True):
