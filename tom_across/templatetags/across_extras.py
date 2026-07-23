@@ -24,6 +24,9 @@ def across_app_observations_url(target, radius=DEFAULT_CONE_SEARCH_RADIUS):
     query = urlencode({
         'cone_search_ra': f'{target.ra:f}',
         'cone_search_dec': f'{target.dec:f}',
-        'cone_search_radius': radius,
+        'cone_search_radius': (
+            settings.ACROSS_OBSERVATION_DEFAULT_ARGS.get('cone_search_radius', radius) 
+            if hasattr(settings, "ACROSS_OBSERVATION_DEFAULT_ARGS") else radius
+        ),
     })
     return f'{base}/observations?{query}'

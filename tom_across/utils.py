@@ -136,8 +136,13 @@ ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.
 def observation_rows(target, start_date=None, end_date=None, wavelength_type=None,
                       wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
     kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
-    kwargs['cone_search_ra'] = target.ra
-    kwargs['cone_search_dec'] = target.dec
+
+    if target.type == "SIDEREAL":        
+        kwargs['cone_search_ra'] = target.ra
+        kwargs['cone_search_dec'] = target.dec
+
+        if not kwargs.get("cone_search_radius"):
+            kwargs["cone_search_radius"] = 0.01
 
     if start_date:
         kwargs['date_range_begin'] = start_date
@@ -158,14 +163,13 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
     key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
-    if rows is not None:
+    if rows:
         logger.info(f'pulling from cache')
         return rows
 
     rows = []
     try:
         results = client.observation.get_many(**kwargs)
-
         
         instrument_cache = get_across_instrument_ids()
         for obs in results.items:
@@ -173,6 +177,7 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
             band = obs.bandpass.to_dict().get('filter_name')
             min_band = obs.bandpass.to_dict().get('min')
             max_band = obs.bandpass.to_dict().get('max')
+            
             rows.append({
                 'telescope': tele,
                 'instrument': inst,
@@ -182,6 +187,7 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
                 'filter_name': band,
                 'wavelength_range': (min_band, max_band)
             })
+    
     except ServiceException as e:
         logger.info(f'Loading error: {e}')
 
