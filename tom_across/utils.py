@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from datetime import datetime, timedelta
 from plotly import graph_objs as go
-from plotly import offline
+from plotly.io import to_html
 from plotly.subplots import make_subplots
 from across.sdk.v1.exceptions import ServiceException
 import hashlib
@@ -12,26 +12,29 @@ client = Client()
 import logging
 logger = logging.getLogger(__name__)
 
-def visibility_from_instrument(target, observatory_list, date_range_begin=datetime.now(), date_range_end=datetime.now() + timedelta(hours=24)):
+def visibility_from_instrument(target, observatory_list, date_range_begin=None, date_range_end=None, hi_res=True):
 
     ra, dec = target.ra, target.dec
     obs_names_to_instr_ids = get_inst_ids_from_observatory_name()
     selected_observatories = [(name, obs_names_to_instr_ids[name]) for name in observatory_list if name in obs_names_to_instr_ids]
     inst_ids = [inst_id for _, inst_id in selected_observatories]
 
-    now = date_range_begin
-    day_range_hours = (date_range_end - date_range_begin).total_seconds() / 3600
+    if date_range_begin is None:
+        date_range_begin = datetime.now()
+
+    if date_range_end is None:
+        date_range_end = date_range_begin + timedelta(hours=24)
 
     cache_key = (f"visibility_plot_{target.id}_{'_'.join(sorted(observatory_list))}_"
-                 f"{date_range_begin.replace(minute=date_range_begin.minute // 5 * 5, second=0, microsecond=0).isoformat()}"
-                 f"_{date_range_end.replace(minute=date_range_end.minute // 5 * 5, second=0, microsecond=0).isoformat()}")
+                 f"{date_range_begin.isoformat()}"
+                 f"_{date_range_end.isoformat()}")
     cached_context = cache.get(cache_key)
     if cached_context:
         logger.info('cache exists, pulling from cached context')
         return {**cached_context, 'target': target}
 
     logger.info(f'instrument ids {inst_ids}, ra {ra}, dec {dec}, date_range_begin {date_range_begin}, date_range_end {date_range_end}')
-    joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=True)
+    joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=hi_res)
     observatory_name_cache = get_observatory_name_id_map()
 
     fig = make_subplots(rows=len(inst_ids), cols=1, shared_xaxes=True, vertical_spacing=0)
@@ -43,26 +46,33 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=dateti
         for obs_vis_window in obs_vis_windows:
             observatory_max_vis = obs_vis_window.max_visibility_duration
             observatory_window = obs_vis_window.window
-            observatory_begin_hours = (observatory_window.begin.datetime - now).total_seconds()/3600 if (observatory_window.begin.datetime - now).total_seconds() > 0 else 0
-            observatory_end_hours = (observatory_window.end.datetime - now).total_seconds()/3600 if (observatory_window.end.datetime - now).total_seconds() > 0 else 0
             observatory_name = observatory_name_cache[observatory_window.end.observatory_id]
-
-            fig.add_trace(go.Scatter(
-                x=[observatory_begin_hours, observatory_end_hours, observatory_end_hours, observatory_begin_hours, observatory_begin_hours],
-                y=[0, 0, 1, 1, 0],
-                fill="toself",
-                fillcolor=color[1],
-                line=dict(color=color[0], width=3),
-                opacity=0.5,
-                mode="lines",
-                hoverinfo="text",
-                text=f"{observatory_name}<br>{observatory_window.begin.datetime} – {observatory_window.end.datetime}<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours",
-                showlegend=False,
-            ), row=i+1, col=1)
+            fig.add_trace(
+                go.Scatter(
+                    x=[
+                        observatory_window.begin.datetime,
+                        observatory_window.end.datetime,
+                        observatory_window.end.datetime,
+                        observatory_window.begin.datetime,
+                        observatory_window.begin.datetime
+                    ],
+                    y=[0, 0, 1, 1, 0],
+                    fill="toself",
+                    fillcolor=color[1],
+                    line=dict(color=color[0], width=3),
+                    opacity=0.5,
+                    mode="lines",
+                    hoverinfo="text",
+                    text=f"{observatory_name}<br>{observatory_window.begin.datetime} – {observatory_window.end.datetime}<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours",
+                    showlegend=False
+                ),
+                row=i+1,
+                col=1
+            )
 
         if not obs_vis_windows:
             fig.add_trace(go.Scatter(
-                x=[0, day_range_hours], y=[0, 0],
+                x=[date_range_begin, date_range_end], y=[0, 0],
                 mode="lines",
                 line=dict(color="rgba(0,0,0,0)"),
                 hoverinfo="skip",
@@ -71,8 +81,7 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=dateti
 
         fig.update_yaxes(title_text=observatory_name, showgrid=False, showticklabels=False, range=[0, 1], row=i+1, col=1)
 
-    fig.update_xaxes(range=[0, day_range_hours])
-    fig.update_xaxes(title_text=f"Hours from {date_range_begin.strftime('%B %d, %Y %I:%M %p')}", row=len(inst_ids))
+    fig.update_xaxes(range=[date_range_begin, date_range_end])
     fig.update_layout(
         height=150 * len(inst_ids) + 100,
         autosize=True,
@@ -81,7 +90,7 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=dateti
         font=dict(size=14),
     )
 
-    plot_html = offline.plot(fig, output_type='div', show_link=False, config={'responsive': True})
+    plot_html = to_html(fig, full_html=False, include_plotlyjs=False, config={"responsive": True})
 
     cacheable_context = {
         'observatory_list': observatory_list,
@@ -132,12 +141,17 @@ def get_inst_ids_from_observatory_name():
 
     return data
 
-ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.01}
+ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.1}
 def observation_rows(target, start_date=None, end_date=None, wavelength_type=None,
                       wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
     kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
-    kwargs['cone_search_ra'] = target.ra
-    kwargs['cone_search_dec'] = target.dec
+
+    if target.type == "SIDEREAL":        
+        kwargs['cone_search_ra'] = target.ra
+        kwargs['cone_search_dec'] = target.dec
+
+        if not kwargs.get("cone_search_radius"):
+            kwargs["cone_search_radius"] = 0.1
 
     if start_date:
         kwargs['date_range_begin'] = start_date
@@ -158,14 +172,13 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
     key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
-    if rows is not None:
+    if rows:
         logger.info(f'pulling from cache')
         return rows
 
     rows = []
     try:
         results = client.observation.get_many(**kwargs)
-
         
         instrument_cache = get_across_instrument_ids()
         for obs in results.items:
@@ -173,6 +186,7 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
             band = obs.bandpass.to_dict().get('filter_name')
             min_band = obs.bandpass.to_dict().get('min')
             max_band = obs.bandpass.to_dict().get('max')
+            
             rows.append({
                 'telescope': tele,
                 'instrument': inst,
@@ -182,6 +196,7 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
                 'filter_name': band,
                 'wavelength_range': (min_band, max_band)
             })
+    
     except ServiceException as e:
         logger.info(f'Loading error: {e}')
 

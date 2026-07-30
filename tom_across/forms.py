@@ -23,8 +23,8 @@ class ObservationFilterForm(forms.Form):
     wavelength_max = forms.FloatField(required=False, label='Max',
                                       widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Max'}))
     observation_type = forms.ChoiceField(required=False, label='Observation type',
-                                         choices=[('', 'Any'), ('Imaging', 'Imaging'),
-                                                  ('Spectroscopy', 'Spectroscopy')])
+                                         choices=[('', 'Any'), ('imaging', 'Imaging'),
+                                                  ('spectroscopy', 'Spectroscopy')])
     cone_radius = forms.FloatField(required=False, label='Cone Radius')
 
     def __init__(self, *args, **kwargs):
@@ -68,17 +68,17 @@ class ObservationFilterForm(forms.Form):
 
         if wavelength_type:
             if wavelength_min is None:
-                cleaned_data["wavelength_min"] = 1
+                cleaned_data["wavelength_min"] = 1e-5
             if wavelength_max is None:
-                cleaned_data["wavelength_max"] = 1000000
+                cleaned_data["wavelength_max"] = 1e10
 
         return cleaned_data
 
 
 class VisibilityPlotForm(forms.Form):
     observatories = forms.MultipleChoiceField(required=True, widget=forms.CheckboxSelectMultiple, label=False)
-    begin = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
-    end = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
+    begin = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}), label='Begin (UTC)')
+    end = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}), label='End (UTC)')
 
     def __init__(self, *args, observatory_choices=None, **kwargs):
         super().__init__(*args, **kwargs)

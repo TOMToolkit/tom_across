@@ -38,7 +38,8 @@ class ObservationTable(HTMXTable):
 
     def render_wavelength_range(self, value):
             try:
-                logger.info(f'{value}')
-                return f"{float(value[0]):.0f} - {float(value[1]):.0f}"
+                rendered_min = f"{float(value[0]):.0f}" if float(value[0]) > 1 else f"{float(value[0]):.2e}"
+                rendered_max = f"{float(value[1]):.0f}" if float(value[1]) > 1 else f"{float(value[1]):.2e}"
+                return f"{rendered_min} - {rendered_max}"
             except (ValueError, TypeError):
                 return value

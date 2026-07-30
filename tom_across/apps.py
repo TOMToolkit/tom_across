@@ -10,7 +10,7 @@ class TomAppConfig(AppConfig):
 
 
     def target_detail_tabs(self):
-        return [{"label": "ACROSS Tab", "partial": "tom_across/target_across.html"}]
+        return [{"label": "ACROSS", "partial": "tom_across/target_across.html"}]
 
     def include_url_paths(self):
         urlpatterns = [
