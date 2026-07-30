@@ -51,6 +51,7 @@ def visibility_plot_view(request, pk):
         return render(request, 'tom_across/partials/visibility_plot.html', {'plot': None})
     
     names = sorted(set(get_observatory_name_id_map().values()))
+    hi_res = True
     observatory_choices = [(n, n) for n in names]
     now = datetime.now()
     default_observatories = getattr(settings, 'ACROSS_VIS_OBSERVATORIES', ['HST', 'JWST'])
@@ -64,9 +65,12 @@ def visibility_plot_view(request, pk):
             date_range_begin = date_range_begin.astimezone(timezone.utc).replace(tzinfo=None)
         if date_range_end.tzinfo is not None:
             date_range_end = date_range_end.astimezone(timezone.utc).replace(tzinfo=None)
+        if (date_range_end-date_range_begin) > timedelta(days=2):
+            hi_res = False
+            logger.info(f'changed hi res to false {(date_range_end-date_range_begin)}')
     else:
         observatory_list, date_range_begin, date_range_end = defaults['observatories'], defaults['begin'], defaults['end']
 
-    context = visibility_from_instrument(target, observatory_list, date_range_begin = date_range_begin, date_range_end = date_range_end)
+    context = visibility_from_instrument(target, observatory_list, date_range_begin = date_range_begin, date_range_end = date_range_end, hi_res = hi_res)
     context['form'] = form
     return render(request, 'tom_across/partials/visibility_plot.html', context)

@@ -77,8 +77,8 @@ class ObservationFilterForm(forms.Form):
 
 class VisibilityPlotForm(forms.Form):
     observatories = forms.MultipleChoiceField(required=True, widget=forms.CheckboxSelectMultiple, label=False)
-    begin = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
-    end = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
+    begin = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}), label='Begin (UTC)')
+    end = forms.DateTimeField(required=True, widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}), label='End (UTC)')
 
     def __init__(self, *args, observatory_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
