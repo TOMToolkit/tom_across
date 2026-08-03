@@ -194,7 +194,8 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
                 'date': obs.date_range.end,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
-                'wavelength_range': (min_band, max_band)
+                'wavelength_range': (min_band, max_band),
+                'external_observation_id': (obs.instrument_id, obs.external_observation_id)
             })
     
     except ServiceException as e:
@@ -216,6 +217,25 @@ def get_across_instrument_ids():
         print('GETTING INST IDS FROM ACROSS')
         instruments = client.instrument.get_many()
         data = {instrument.id: [instrument.name,instrument.telescope.name] for instrument in instruments}
+
+        cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
+
+    return data
+
+def get_across_observatory_telescope_name_map():
+    """
+    Build a dictionary of ACROSS observatory names and their corresponding telescope names.
+    Cached for 24 hours, refreshed on cache miss.
+    """
+    cache_key = "across_observatory_telescope_name_map"
+    data = cache.get(cache_key)
+
+    if data is None:
+        print('GETTING OBSERVATORY TELESCOPE NAMES FROM ACROSS')
+        observatories = client.observatory.get_many()
+        data = {}
+        for obs in observatories:
+            data[obs.short_name] = [tele.name for tele in obs.telescopes]
 
         cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
 
