@@ -1,9 +1,4 @@
 from django.test import TestCase
-
-
-class TestApp(TestCase):
-    """NOTE: to run these tests in your venv: python ./{{tom_app}}/tests/run_tests.py"""
-
-    def test_unittest(self):
-        """Ensure the testing infrastructure is working."""
-        self.assertTrue(True)
+'''
+Test suite for TOM ACROSS, add tests as necessary.
+'''
