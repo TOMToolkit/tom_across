@@ -28,7 +28,7 @@ class ObservationTable(HTMXTable):
 
     def get_table_action_url(self):
         target_id = self.request.resolver_match.kwargs.get("target_id")
-        return reverse("across:observation-table", kwargs={"target_id": target_id})
+        return reverse("tom_across:observation-table", kwargs={"target_id": target_id})
 
     def render_exptime(self, value):
         try:

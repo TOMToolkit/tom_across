@@ -9,7 +9,7 @@
         </a>
     </div>
     <div class="card-body" id="obs-table"
-         hx-get="{% url 'across:observation-table' target.id %}"
+         hx-get="{% url 'tom_across:observation-table' target.id %}"
          hx-trigger="load"
          hx-target="#obs-table"
          hx-swap="innerHTML">
@@ -28,10 +28,12 @@
         {% endif %}
     </div>
     <div class="card-body" id="visibility-plot-wrapper"
-         hx-get="{% url 'across:visibility-plot' target.id %}"
+         hx-get="{% url 'tom_across:visibility-plot' target.id %}"
          hx-trigger="load"
          hx-target="#visibility-plot-wrapper"
          hx-swap="innerHTML">
         Loading visibility...
     </div>
 </div>
+
+<p><em>TOM Toolkit Module (<a href="https://github.com/TOMToolkit/tom_across" target="_blank">tom_across</a>) version {{ version }}</em></p>
