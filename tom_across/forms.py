@@ -1,34 +1,55 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, HTML, Field
+from datetime import datetime, timedelta
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-WAVELENGTH_TYPE_CHOICES = [
-    ('angstrom', 'angstrom'),
-    ('nm', 'nm'),
-    ('keV', 'keV'),
-]
-
 
 class ObservationFilterForm(forms.Form):
     start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
     end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-    wavelength_type = forms.ChoiceField(required=False, label='Unit', choices=WAVELENGTH_TYPE_CHOICES,
-                                        widget=forms.Select(attrs={'data-wavelength-unit': ''}))
-    wavelength_min = forms.FloatField(required=False, label='Min',
-                                      widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Min'}))
-    wavelength_max = forms.FloatField(required=False, label='Max',
-                                      widget=forms.NumberInput(attrs={'step': 'any', 'min': '0', 'placeholder': 'Max'}))
-    observation_type = forms.ChoiceField(required=False, label='Observation type',
-                                         choices=[('', 'Any'), ('imaging', 'Imaging'),
-                                                  ('spectroscopy', 'Spectroscopy')])
+    observation_type = forms.CharField(required=False, label='Observation type', widget=forms.Select())
+    instrument = forms.CharField(required=False, label='Instrument', widget=forms.Select())
+    status = forms.CharField(required=False, label='Observation Status', widget=forms.Select())
     cone_radius = forms.FloatField(required=False, label='Cone Radius')
 
     def __init__(self, *args, **kwargs):
+        qs_data = kwargs.pop('queryset_data', None)
         super().__init__(*args, **kwargs)
+
+        if qs_data:
+            unique_instruments = sorted(list({row['instrument'] for row in qs_data if row.get('instrument')}))
+            self.fields['instrument'].widget.choices = [('', 'Any')] + [(inst, inst) for inst in unique_instruments]
+
+            unique_types = sorted(list({row['type'] for row in qs_data if row.get('type')}))
+            self.fields['observation_type'].widget.choices = [('', 'Any')] + [(t, t.capitalize()) for t in unique_types]
+
+            unique_statuses = sorted(list({row['status'] for row in qs_data if row.get('status')}))
+            self.fields['status'].widget.choices = [('', 'Any')] + [(s, s.capitalize()) for s in unique_statuses]
+
+            all_dates = [
+                row['date'].date()
+                if isinstance(row['date'], datetime)
+                else row['date'] for row in qs_data if row.get('date')
+            ]
+
+            min_date = min(all_dates) - timedelta(days=1)   # add buffer for not including time
+            max_date = max(all_dates) + timedelta(days=1)   # add buffer for not including time
+
+            self.fields['start_date'].initial = min_date
+            self.fields['end_date'].initial = max_date
+            if self.is_bound:
+                if not self.data.get('start_date'):
+                    self.fields['start_date'].widget.value_from_datadict = lambda *args, **kwargs: min_date.isoformat()
+                if not self.data.get('end_date'):
+                    self.fields['end_date'].widget.value_from_datadict = lambda *args, **kwargs: max_date.isoformat()
+
+        else:
+            self.fields['instrument'].choices = [('', 'Any')]
+            self.fields['observation_type'].choices = [('', 'Any')]
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -40,13 +61,9 @@ class ObservationFilterForm(forms.Form):
                 css_class='form-row'
             ),
             Row(
-                Column('wavelength_type', css_class='col-md-4'),
-                Column('wavelength_min', css_class='col-md-4'),
-                Column('wavelength_max', css_class='col-md-4'),
-                css_class='row g-3'
-            ),
-            Row(
                 Column('observation_type', css_class='col-md-4'),
+                Column('instrument', css_class='col-md-4'),
+                Column('status', css_class='col-md-4'),
                 Column('cone_radius', css_class='col-md-4'),
                 Column(
                     HTML(
@@ -58,21 +75,6 @@ class ObservationFilterForm(forms.Form):
                 css_class='row g-3'
             ),
         )
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        wavelength_type = cleaned_data.get("wavelength_type")
-        wavelength_min = cleaned_data.get("wavelength_min")
-        wavelength_max = cleaned_data.get("wavelength_max")
-
-        if wavelength_type:
-            if wavelength_min is None:
-                cleaned_data["wavelength_min"] = 1e-5
-            if wavelength_max is None:
-                cleaned_data["wavelength_max"] = 1e10
-
-        return cleaned_data
 
 
 class VisibilityPlotForm(forms.Form):

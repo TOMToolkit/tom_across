@@ -30,10 +30,9 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
                  f"_{date_range_end.isoformat()}")
     cached_context = cache.get(cache_key)
     if cached_context:
-        logger.info('cache exists, pulling from cached context')
+        logger.info('[VISIBILITY] Pulling from cache')
         return {**cached_context, 'target': target}
 
-    logger.info(f'instrument ids {inst_ids}, ra {ra}, dec {dec}, date_range_begin {date_range_begin}, date_range_end {date_range_end}')
     joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=hi_res)
     observatory_name_cache = get_observatory_name_id_map()
 
@@ -141,60 +140,64 @@ def get_inst_ids_from_observatory_name():
 
     return data
 
-ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.1}
-def observation_rows(target, start_date=None, end_date=None, wavelength_type=None,
-                      wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
-    kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
-
+ACROSS_OBSERVATION_DEFAULT_ARGS = {'cone_search_radius': 0.1}
+def observation_rows(target, start_date=None, end_date=None, status=None, instrument=None,
+                       obs_type=None, cone_search_radius=None):
+    kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS).copy()
+    instrument_cache = get_across_instrument_ids()
+    
     if target.type == "SIDEREAL":        
         kwargs['cone_search_ra'] = target.ra
         kwargs['cone_search_dec'] = target.dec
-
-        if not kwargs.get("cone_search_radius"):
+        cone_search_from_settings = kwargs.get("cone_search_radius")
+        if not cone_search_from_settings:
             kwargs["cone_search_radius"] = 0.1
 
     if start_date:
         kwargs['date_range_begin'] = start_date
     if end_date:
         kwargs['date_range_end'] = end_date
-    if wavelength_type:
-        kwargs['bandpass_type'] = wavelength_type
-    if wavelength_min:
-        kwargs['bandpass_min'] = wavelength_min
-    if wavelength_max:
-        kwargs['bandpass_max'] = wavelength_max
+    if status:
+        kwargs['status'] = status
+    inst_id = None
+    if instrument:
+        for key, value_list in instrument_cache.items():
+            if instrument in value_list:
+                inst_id = key
+                kwargs['instrument_ids'] = [inst_id]
     if obs_type:
         kwargs['type'] = obs_type
     if cone_search_radius:
         kwargs['cone_search_radius'] = cone_search_radius
 
-    logger.info(f'kwargs: {kwargs}')
-    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
+    key_raw = f"{target.id}-{start_date}-{end_date}-{status}-{inst_id}-{obs_type}-{cone_search_radius}-{cone_search_from_settings}"
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows:
-        logger.info(f'pulling from cache')
+        logger.info(f'[OBSERVATION TABLE] Pulling from cache')
         return rows
-
     rows = []
     try:
         results = client.observation.get_many(**kwargs)
-        
-        instrument_cache = get_across_instrument_ids()
         for obs in results.items:
             inst, tele = instrument_cache[obs.instrument_id]
             band = obs.bandpass.to_dict().get('filter_name')
             min_band = obs.bandpass.to_dict().get('min')
             max_band = obs.bandpass.to_dict().get('max')
+            status = obs.status.value
+            proposal = obs.proposal_reference
             
             rows.append({
                 'telescope': tele,
                 'instrument': inst,
                 'exptime': obs.exposure_time,
                 'date': obs.date_range.end,
+                'status':status,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
-                'wavelength_range': (min_band, max_band)
+                'wavelength_range': (min_band, max_band),
+                'proposal': proposal,
+                'external_observation_id': (obs.instrument_id, obs.external_observation_id)
             })
     
     except ServiceException as e:

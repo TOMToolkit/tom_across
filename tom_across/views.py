@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
-    template_name = "tom_across/observation_table.html"
+    template_name = "tom_across/target_across.html"
     paginate_by = 10
     model = None
 
@@ -28,10 +28,9 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
             filters = {
                 'start_date': form.cleaned_data.get('start_date'),
                 'end_date': form.cleaned_data.get('end_date'),
-                'wavelength_min': form.cleaned_data.get('wavelength_min'),
-                'wavelength_max': form.cleaned_data.get('wavelength_max'),
-                'wavelength_type': form.cleaned_data.get('wavelength_type'),
+                'status': form.cleaned_data.get('status','planned'),
                 'obs_type': form.cleaned_data.get('observation_type'),
+                'instrument': form.cleaned_data.get('instrument'),
                 'cone_search_radius': form.cleaned_data.get('cone_radius'),
             }
             filters = {k: v for k, v in filters.items() if v not in (None, '')}
@@ -39,11 +38,15 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(HTMXTableViewMixin, self).get_context_data(**kwargs)
+        target = Target.objects.get(id=self.kwargs["target_id"])
+        full_rows = observation_rows(target)
+        qs_data = self.object_list
         context['record_count'] = context['paginator'].count
         context['empty_database'] = not context['object_list']
         context['target'] = Target.objects.get(id=self.kwargs['target_id'])
-        context['filter_form'] = ObservationFilterForm(self.request.GET or None)
+        context['filter_form'] = ObservationFilterForm(self.request.GET or None, queryset_data=full_rows)
         return context
+
 
 def visibility_plot_view(request, pk):
     target = Target.objects.get(id=pk)
