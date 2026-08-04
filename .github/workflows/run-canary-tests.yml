@@ -15,6 +15,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "poetry>=2.0,<3.0"
           poetry env info  # display poetry's env info for debugging
-          poetry install  --with test
+          poetry install
     - name: Run Canary Tests
       run: poetry run python tom_across/tests/run_canary_tests.py
