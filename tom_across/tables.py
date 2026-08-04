@@ -79,7 +79,7 @@ class ObservationTable(HTMXTable):
 
             if name_to_try in ["HST", "JWST"]:
                 resolver = MASTArchiveResolver(
-                    external_observation_id=value[1],
+                    external_observation_id=value[1].split(":")[0],
                     mission=name_to_try
                 )
 

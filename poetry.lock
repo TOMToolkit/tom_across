@@ -64,7 +64,7 @@ spiceypy = ">=6.0.0"
 type = "git"
 url = "https://github.com/NASA-ACROSS/across-tools"
 reference = "170-add-functionality-to-link-observations-to-archival-data-pages"
-resolved_reference = "8b75f4a598f76f884408391008fb88d09d0efb17"
+resolved_reference = "75df1a6868845b9027451efbc3585787b95a34d9"
 
 [[package]]
 name = "alerce"
