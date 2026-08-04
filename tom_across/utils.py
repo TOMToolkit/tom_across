@@ -7,16 +7,24 @@ from across.sdk.v1.exceptions import ServiceException
 import hashlib
 from django.conf import settings
 from across.client import Client
-client = Client()
-
 import logging
+
+client = Client()
 logger = logging.getLogger(__name__)
+
+ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.1}
+
 
 def visibility_from_instrument(target, observatory_list, date_range_begin=None, date_range_end=None, hi_res=True):
 
     ra, dec = target.ra, target.dec
     obs_names_to_instr_ids = get_inst_ids_from_observatory_name()
-    selected_observatories = [(name, obs_names_to_instr_ids[name]) for name in observatory_list if name in obs_names_to_instr_ids]
+
+    selected_observatories = [
+        (name, obs_names_to_instr_ids[name])
+        for name in observatory_list if name in obs_names_to_instr_ids
+        ]
+
     inst_ids = [inst_id for _, inst_id in selected_observatories]
 
     if date_range_begin is None:
@@ -33,8 +41,12 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
         logger.info('cache exists, pulling from cached context')
         return {**cached_context, 'target': target}
 
-    logger.info(f'instrument ids {inst_ids}, ra {ra}, dec {dec}, date_range_begin {date_range_begin}, date_range_end {date_range_end}')
-    joint = client.visibility_calculator.calculate_joint_windows(instrument_ids=inst_ids, ra=ra, dec=dec, date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=hi_res)
+    joint = client.visibility_calculator.calculate_joint_windows(
+        instrument_ids=inst_ids, ra=ra, dec=dec,
+        date_range_begin=date_range_begin, date_range_end=date_range_end,
+        hi_res=hi_res
+        )
+
     observatory_name_cache = get_observatory_name_id_map()
 
     fig = make_subplots(rows=len(inst_ids), cols=1, shared_xaxes=True, vertical_spacing=0)
@@ -63,7 +75,9 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
                     opacity=0.5,
                     mode="lines",
                     hoverinfo="text",
-                    text=f"{observatory_name}<br>{observatory_window.begin.datetime} – {observatory_window.end.datetime}<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours",
+                    text=f"{observatory_name}<br>{observatory_window.begin.datetime}"
+                         f" – {observatory_window.end.datetime}"
+                         f"<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours",
                     showlegend=False
                 ),
                 row=i+1,
@@ -79,7 +93,9 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
                 showlegend=False,
             ), row=i + 1, col=1)
 
-        fig.update_yaxes(title_text=observatory_name, showgrid=False, showticklabels=False, range=[0, 1], row=i+1, col=1)
+        fig.update_yaxes(
+            title_text=observatory_name, showgrid=False, showticklabels=False, range=[0, 1], row=i+1, col=1
+            )
 
     fig.update_xaxes(range=[date_range_begin, date_range_end])
     fig.update_layout(
@@ -100,6 +116,7 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
 
     return {**cacheable_context, 'target': target}
 
+
 def get_observatory_name_id_map():
     """
     Build name/short_name to observatory_id map.
@@ -112,6 +129,7 @@ def get_observatory_name_id_map():
         data = {o.id: o.short_name for o in client.observatory.get_many()}
         cache.set(cache_key, data, timeout=24 * 60 * 60)
     return data
+
 
 def get_inst_ids_from_observatory_name():
     """
@@ -141,12 +159,12 @@ def get_inst_ids_from_observatory_name():
 
     return data
 
-ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.1}
+
 def observation_rows(target, start_date=None, end_date=None, wavelength_type=None,
-                      wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
+                     wavelength_min=None, wavelength_max=None, obs_type=None, cone_search_radius=None):
     kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS)
 
-    if target.type == "SIDEREAL":        
+    if target.type == "SIDEREAL":
         kwargs['cone_search_ra'] = target.ra
         kwargs['cone_search_dec'] = target.dec
 
@@ -169,24 +187,28 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
         kwargs['cone_search_radius'] = cone_search_radius
 
     logger.info(f'kwargs: {kwargs}')
-    key_raw = f"{target.id}-{start_date}-{end_date}-{wavelength_min}-{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
+    key_raw = (
+        f"{target.id}-{start_date}-{end_date}-{wavelength_min}-"
+        f"{wavelength_max}-{wavelength_type}-{obs_type}-{cone_search_radius}"
+        )
+
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows:
-        logger.info(f'pulling from cache')
+        logger.info('pulling from cache')
         return rows
 
     rows = []
     try:
         results = client.observation.get_many(**kwargs)
-        
+
         instrument_cache = get_across_instrument_ids()
         for obs in results.items:
             inst, tele = instrument_cache[obs.instrument_id]
             band = obs.bandpass.to_dict().get('filter_name')
             min_band = obs.bandpass.to_dict().get('min')
             max_band = obs.bandpass.to_dict().get('max')
-            
+
             rows.append({
                 'telescope': tele,
                 'instrument': inst,
@@ -196,12 +218,13 @@ def observation_rows(target, start_date=None, end_date=None, wavelength_type=Non
                 'filter_name': band,
                 'wavelength_range': (min_band, max_band)
             })
-    
+
     except ServiceException as e:
         logger.info(f'Loading error: {e}')
 
     cache.set(cache_key, rows, timeout=24 * 60 * 60)
     return rows
+
 
 def get_across_instrument_ids():
     """
@@ -215,7 +238,7 @@ def get_across_instrument_ids():
     if data is None:
         print('GETTING INST IDS FROM ACROSS')
         instruments = client.instrument.get_many()
-        data = {instrument.id: [instrument.name,instrument.telescope.name] for instrument in instruments}
+        data = {instrument.id: [instrument.name, instrument.telescope.name] for instrument in instruments}
 
         cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
 
