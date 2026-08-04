@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 class ObservationTable(HTMXTable):
-    telescope = tables.Column()
+    observatory = tables.Column()
     instrument = tables.Column()
     exptime = tables.Column()
     date = tables.DateTimeColumn(format="Y-m-d H:i")

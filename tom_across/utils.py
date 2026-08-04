@@ -174,13 +174,19 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows:
-        logger.info(f'[OBSERVATION TABLE] Pulling from cache')
+        logger.info(f'[OBSERVATION TABLE] Pulling from cache with key {key_raw}')
         return rows
     rows = []
     try:
         results = client.observation.get_many(**kwargs)
         for obs in results.items:
-            inst, tele = instrument_cache[obs.instrument_id]
+            inst, tele, tele_shortname = instrument_cache[obs.instrument_id]
+
+            obs_tele_name_dict = get_across_observatory_telescope_name_map()
+            for obs_name, tele_names in obs_tele_name_dict.items():
+                if tele in tele_names:
+                    break
+
             band = obs.bandpass.to_dict().get('filter_name')
             min_band = obs.bandpass.to_dict().get('min')
             max_band = obs.bandpass.to_dict().get('max')
@@ -188,7 +194,7 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
             proposal = obs.proposal_reference
             
             rows.append({
-                'telescope': tele,
+                'observatory': obs_name,
                 'instrument': inst,
                 'exptime': obs.exposure_time,
                 'date': obs.date_range.end,
@@ -218,6 +224,25 @@ def get_across_instrument_ids():
         print('GETTING INST IDS FROM ACROSS')
         instruments = client.instrument.get_many()
         data = {instrument.id: [instrument.name,instrument.telescope.name] for instrument in instruments}
+
+        cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
+
+    return data
+
+def get_across_observatory_telescope_name_map():
+    """
+    Build a dictionary of ACROSS observatory names and their corresponding telescope names.
+    Cached for 24 hours, refreshed on cache miss.
+    """
+    cache_key = "across_observatory_telescope_name_map"
+    data = cache.get(cache_key)
+
+    if data is None:
+        print('GETTING OBSERVATORY TELESCOPE NAMES FROM ACROSS')
+        observatories = client.observatory.get_many()
+        data = {}
+        for obs in observatories:
+            data[obs.short_name] = [tele.name for tele in obs.telescopes]
 
         cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
 
