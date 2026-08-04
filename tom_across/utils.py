@@ -197,7 +197,6 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                 'filter_name': band,
                 'wavelength_range': (min_band, max_band),
                 'proposal': proposal,
-                'external_observation_id': (obs.instrument_id, obs.external_observation_id)
             })
     
     except ServiceException as e:
