@@ -17,6 +17,7 @@ class ObservationTable(HTMXTable):
     type = tables.Column()
     filter_name = tables.Column()
     wavelength_range = tables.Column()
+    status = tables.Column()
     external_observation_id = tables.Column()
 
     selection = None
@@ -38,7 +39,7 @@ class ObservationTable(HTMXTable):
 
     def render_exptime(self, value):
         try:
-            return f"{float(value):.2f}"
+            return f"{float(value):.1f}"
         except (ValueError, TypeError):
             return value
 
