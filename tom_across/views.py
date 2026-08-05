@@ -9,7 +9,6 @@ from tom_common.htmx_table import HTMXTableViewMixin
 from tom_across.forms import VisibilityPlotForm, ObservationFilterForm
 from tom_across.utils import get_observatory_name_id_map, visibility_from_instrument, observation_rows
 from tom_across.tables import ObservationTable
-from tom_across import __version__
 
 import logging
 
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
-    template_name = "tom_across/target_across.html"
+    template_name = "tom_across/target_acros.html"
     paginate_by = 10
     model = None
 
@@ -46,7 +45,6 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
         context['empty_database'] = not context['object_list']
         context['target'] = Target.objects.get(id=self.kwargs['target_id'])
         context['filter_form'] = ObservationFilterForm(self.request.GET or None, queryset_data=full_rows)
-        context['version'] = __version__
         return context
 
 

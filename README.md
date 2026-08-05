@@ -6,7 +6,7 @@ A TOM Toolkit app that integrates Astrophysics Cross-Observatory Science Support
 ## example settings.py variables for deployment
 
 Default arguments to be passed through to make the observation table on page load
-`ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.1}`
+`ACROSS_OBSERVATION_DEFAULT_ARGS = {'cone_search_radius': 0.1}`
 
 URL for the across app to link the observations table and visibility tool.
 `ACROSS_APP_URL = 'https://app.across.sciencecloud.nasa.gov'`
