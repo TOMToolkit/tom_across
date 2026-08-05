@@ -1,7 +1,7 @@
 # tom_across app
 
-A TOM Toolkit app that integrates Astrophysics Cross-Observatory Science Support (`ACROSS <https://science.data.nasa.gov/data-sites/across>_`)
-functionality and features into the target page.
+A TOM Toolkit app that integrates Astrophysics Cross-Observatory Science Support
+([ACROSS](https://science.data.nasa.gov/data-sites/across)) functionality and features into the target page.
 
 ## example settings.py variables for deployment
 
