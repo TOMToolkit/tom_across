@@ -9,8 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 class ObservationFilterForm(forms.Form):
-    start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    start_date = forms.DateField(
+        required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        )
+    end_date = forms.DateField(
+        required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        )
     observation_type = forms.CharField(required=False, label='Observation type', widget=forms.Select())
     instrument = forms.CharField(required=False, label='Instrument', widget=forms.Select())
     status = forms.CharField(required=False, label='Observation Status', widget=forms.Select())

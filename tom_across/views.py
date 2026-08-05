@@ -30,7 +30,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
             filters = {
                 'start_date': form.cleaned_data.get('start_date'),
                 'end_date': form.cleaned_data.get('end_date'),
-                'status': form.cleaned_data.get('status','planned'),
+                'status': form.cleaned_data.get('status', 'planned'),
                 'obs_type': form.cleaned_data.get('observation_type'),
                 'instrument': form.cleaned_data.get('instrument'),
                 'cone_search_radius': form.cleaned_data.get('cone_radius'),
@@ -42,7 +42,6 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
         context = super(HTMXTableViewMixin, self).get_context_data(**kwargs)
         target = Target.objects.get(id=self.kwargs["target_id"])
         full_rows = observation_rows(target)
-        qs_data = self.object_list
         context['record_count'] = context['paginator'].count
         context['empty_database'] = not context['object_list']
         context['target'] = Target.objects.get(id=self.kwargs['target_id'])

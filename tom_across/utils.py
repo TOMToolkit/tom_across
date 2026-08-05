@@ -161,11 +161,11 @@ def get_inst_ids_from_observatory_name():
 
 
 def observation_rows(target, start_date=None, end_date=None, status=None, instrument=None,
-                       obs_type=None, cone_search_radius=None):
+                     obs_type=None, cone_search_radius=None):
     kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS).copy()
     instrument_cache = get_across_instrument_ids()
 
-    if target.type == "SIDEREAL":        
+    if target.type == "SIDEREAL":
         kwargs['cone_search_ra'] = target.ra
         kwargs['cone_search_dec'] = target.dec
         cone_search_from_settings = kwargs.get("cone_search_radius")
@@ -197,8 +197,10 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
     cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows:
-        logger.info(f'[OBSERVATION TABLE] Pulling from cache with key {key_raw}')
+        logger.info('[OBSERVATION TABLE] Pulling from cache with key')
         return rows
+    else:
+        logger.info('[OBSERVATION TABLE] Query not in cache, getting from ACROSS client...')
     rows = []
     try:
         results = client.observation.get_many(**kwargs)
@@ -215,13 +217,13 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
             max_band = obs.bandpass.to_dict().get('max')
             status = obs.status.value
             proposal = obs.proposal_reference
-            
+
             rows.append({
                 'observatory': obs_name,
                 'instrument': inst,
                 'exptime': obs.exposure_time,
                 'date': obs.date_range.end,
-                'status':status,
+                'status': status,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
                 'wavelength_range': (min_band, max_band),
@@ -229,7 +231,7 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
             })
 
     except ServiceException as e:
-        logger.info(f'Loading error: {e}')
+        logger.info(f'[OBSERVATION TABLE] Loading error: {e}')
 
     cache.set(cache_key, rows, timeout=24 * 60 * 60)
     return rows
@@ -253,24 +255,6 @@ def get_across_instrument_ids():
 
     return data
 
-def get_across_observatory_telescope_name_map():
-    """
-    Build a dictionary of ACROSS observatory names and their corresponding telescope names.
-    Cached for 24 hours, refreshed on cache miss.
-    """
-    cache_key = "across_observatory_telescope_name_map"
-    data = cache.get(cache_key)
-
-    if data is None:
-        print('GETTING OBSERVATORY TELESCOPE NAMES FROM ACROSS')
-        observatories = client.observatory.get_many()
-        data = {}
-        for obs in observatories:
-            data[obs.short_name] = [tele.name for tele in obs.telescopes]
-
-        cache.set(cache_key, data, timeout=24 * 60 * 60)  # Cache for 24 hours
-
-    return data
 
 def get_across_observatory_telescope_name_map():
     """
