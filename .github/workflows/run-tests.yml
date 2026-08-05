@@ -67,7 +67,7 @@ jobs:
           python -m pip install "poetry>=2.0,<3.0"
           poetry install --with coverage,lint
       - name: Run Tests
-        run: poetry run coverage run --include=tom_* manage.py test --exclude-tag=canary
+        run: poetry run coverage run tom_across/tests/run_tests.py
       - name: Report Coverage
         run: poetry run coveralls
         env:
