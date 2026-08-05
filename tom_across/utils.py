@@ -12,7 +12,7 @@ import logging
 client = Client()
 logger = logging.getLogger(__name__)
 
-ACROSS_OBSERVATION_DEFAULT_ARGS = {'status': 'planned', 'cone_search_radius': 0.1}
+ACROSS_DEFAULT_ARGS = getattr(settings, 'ACROSS_DEFAULT_ARGS', None) or {}
 
 
 def visibility_from_instrument(target, observatory_list, date_range_begin=None, date_range_end=None, hi_res=True):
@@ -162,7 +162,9 @@ def get_inst_ids_from_observatory_name():
 
 def observation_rows(target, start_date=None, end_date=None, status=None, instrument=None,
                      obs_type=None, cone_search_radius=None):
-    kwargs = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS', ACROSS_OBSERVATION_DEFAULT_ARGS).copy()
+    kwargs = {'status': 'planned', 'cone_search_radius': 0.1,
+              **(ACROSS_DEFAULT_ARGS.get('OBSERVATION_TABLE_DEFAULTS') or {})}
+
     instrument_cache = get_across_instrument_ids()
 
     if target.type == "SIDEREAL":
@@ -213,10 +215,7 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                     break
 
             band = obs.bandpass.to_dict().get('filter_name')
-            min_band = obs.bandpass.to_dict().get('min')
-            max_band = obs.bandpass.to_dict().get('max')
             status = obs.status.value
-            proposal = obs.proposal_reference
 
             rows.append({
                 'observatory': obs_name,
@@ -226,8 +225,6 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                 'status': status,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
-                'wavelength_range': (min_band, max_band),
-                'proposal': proposal,
             })
 
     except ServiceException as e:

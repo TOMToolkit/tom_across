@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class ObservationFilterForm(forms.Form):
-    cone_radius_init = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS').get('cone_search_radius', 0.1)
+    _across_defaults = getattr(settings, 'ACROSS_DEFAULT_ARGS', None) or {}
+    _obs_defaults = _across_defaults.get('OBSERVATION_TABLE_DEFAULTS') or {}
+    cone_radius_init = _obs_defaults.get('cone_search_radius', 0.1)
+
     start_date = forms.DateField(
         required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
         )

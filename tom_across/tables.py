@@ -14,7 +14,6 @@ class ObservationTable(HTMXTable):
     filter_name = tables.Column(verbose_name="Filter")
     exptime = tables.Column(verbose_name="Exp (s)", attrs={"th": {"class": "text-nowrap"}})
     status = tables.Column()
-    proposal = tables.Column(attrs={"th": {"class": "text-nowrap"}})
 
     selection = None
 
