@@ -32,6 +32,7 @@ def across_app_observations_url(target, radius=DEFAULT_CONE_SEARCH_RADIUS):
     })
     return f'{base}/observations?{query}'
 
+
 @register.inclusion_tag('tom_across/target_across.html', takes_context=True)
 def version_context(context):
     context = {'version': __version__}

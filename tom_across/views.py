@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
-    template_name = "tom_across/target_acros.html"
+    template_name = "tom_across/target_across.html"
     paginate_by = 10
     model = None
 

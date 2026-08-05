@@ -215,8 +215,6 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                     break
 
             band = obs.bandpass.to_dict().get('filter_name')
-            min_band = obs.bandpass.to_dict().get('min')
-            max_band = obs.bandpass.to_dict().get('max')
             status = obs.status.value
             proposal = obs.proposal_reference
 
@@ -228,7 +226,6 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                 'status': status,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
-                'wavelength_range': (min_band, max_band),
                 'proposal': proposal,
             })
 
