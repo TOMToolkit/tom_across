@@ -1,19 +1,20 @@
 import django_tables2 as tables
 from tom_common.htmx_table import HTMXTable
 from django.urls import reverse
+from django.utils.html import format_html
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class ObservationTable(HTMXTable):
-    telescope = tables.Column()
-    instrument = tables.Column()
-    exptime = tables.Column()
-    date = tables.DateTimeColumn(format="Y-m-d H:i")
+    observatory = tables.Column()
     type = tables.Column()
-    filter_name = tables.Column()
-    wavelength_range = tables.Column()
+    date = tables.DateTimeColumn(format="Y-m-d H:i")
+    filter_name = tables.Column(verbose_name="Filter")
+    exptime = tables.Column(verbose_name="Exp (s)", attrs={"th": {"class": "text-nowrap"}})
+    status = tables.Column()
+    proposal = tables.Column(attrs={"th": {"class": "text-nowrap"}})
 
     selection = None
 
@@ -32,16 +33,14 @@ class ObservationTable(HTMXTable):
         target_id = self.request.resolver_match.kwargs.get("target_id")
         return reverse("tom_across:observation-table", kwargs={"target_id": target_id})
 
+    def render_observatory(self, value, record):
+        instrument = record.get('instrument') if isinstance(record, dict) else getattr(record, 'instrument', None)
+        if instrument:
+            return format_html('{}<br><small class="text-muted">{}</small>', value, instrument)
+        return value
+
     def render_exptime(self, value):
         try:
-            return f"{float(value):.2f}"
-        except (ValueError, TypeError):
-            return value
-
-    def render_wavelength_range(self, value):
-        try:
-            rendered_min = f"{float(value[0]):.0f}" if float(value[0]) > 1 else f"{float(value[0]):.2e}"
-            rendered_max = f"{float(value[1]):.0f}" if float(value[1]) > 1 else f"{float(value[1]):.2e}"
-            return f"{rendered_min} - {rendered_max}"
+            return f"{float(value):.1f}"
         except (ValueError, TypeError):
             return value
