@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta, timezone
 
-from django.conf import settings
 from django.shortcuts import render
 from django.views.generic.list import ListView
 
 from tom_targets.models import Target
 from tom_common.htmx_table import HTMXTableViewMixin
 from tom_across.forms import VisibilityPlotForm, ObservationFilterForm
-from tom_across.utils import get_observatory_name_id_map, visibility_from_instrument, observation_rows
+from tom_across.utils import (
+    get_observatory_name_id_map, visibility_from_instrument, observation_rows, ACROSS_DEFAULT_ARGS,
+)
 from tom_across.tables import ObservationTable
 
 import logging
@@ -57,7 +58,8 @@ def visibility_plot_view(request, pk):
     hi_res = True
     observatory_choices = [(n, n) for n in names]
     now = datetime.now()
-    default_observatories = getattr(settings, 'ACROSS_VIS_OBSERVATORIES', ['HST', 'JWST'])
+
+    default_observatories = ACROSS_DEFAULT_ARGS.get('VISIBILITY_OBSERVATORY_DEFAULTS') or ['JWST', 'HST']
     defaults = {'observatories': default_observatories, 'begin': now, 'end': now + timedelta(hours=24)}
     form = VisibilityPlotForm(request.GET or defaults, observatory_choices=observatory_choices)
     if form.is_valid():
