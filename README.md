@@ -1,4 +1,4 @@
-# tom_across app
+# tom_across
 
 A TOM Toolkit app that integrates Astrophysics Cross-Observatory Science Support
 ([ACROSS](https://science.data.nasa.gov/data-sites/across)) functionality and features into the target page.
