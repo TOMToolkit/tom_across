@@ -216,7 +216,6 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
 
             band = obs.bandpass.to_dict().get('filter_name')
             status = obs.status.value
-            proposal = obs.proposal_reference
 
             rows.append({
                 'observatory': obs_name,
@@ -226,7 +225,6 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                 'status': status,
                 'type': getattr(obs.type, 'value', obs.type),
                 'filter_name': band,
-                'proposal': proposal,
             })
 
     except ServiceException as e:
