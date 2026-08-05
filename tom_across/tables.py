@@ -4,6 +4,8 @@ from django.urls import reverse
 import logging
 
 logger = logging.getLogger(__name__)
+
+
 class ObservationTable(HTMXTable):
     observatory = tables.Column()
     instrument = tables.Column()
@@ -22,14 +24,14 @@ class ObservationTable(HTMXTable):
         attrs = {
             **HTMXTable.Meta.attrs,
             "hx-target": "#observation-table-wrapper",
-            "hx-swap": "outerHTML",
+            "hx-swap": "outerHTML"
         }
-    
+
     partial_template_name = 'tom_across/partials/observation_table_partial.html'
 
     def get_table_action_url(self):
         target_id = self.request.resolver_match.kwargs.get("target_id")
-        return reverse("across:observation-table", kwargs={"target_id": target_id})
+        return reverse("tom_across:observation-table", kwargs={"target_id": target_id})
 
     def render_exptime(self, value):
         try:
@@ -38,9 +40,9 @@ class ObservationTable(HTMXTable):
             return value
 
     def render_wavelength_range(self, value):
-            try:
-                rendered_min = f"{float(value[0]):.0f}" if float(value[0]) > 1 else f"{float(value[0]):.2e}"
-                rendered_max = f"{float(value[1]):.0f}" if float(value[1]) > 1 else f"{float(value[1]):.2e}"
-                return f"{rendered_min} - {rendered_max}"
-            except (ValueError, TypeError):
-                return value
+        try:
+            rendered_min = f"{float(value[0]):.0f}" if float(value[0]) > 1 else f"{float(value[0]):.2e}"
+            rendered_max = f"{float(value[1]):.0f}" if float(value[1]) > 1 else f"{float(value[1]):.2e}"
+            return f"{rendered_min} - {rendered_max}"
+        except (ValueError, TypeError):
+            return value

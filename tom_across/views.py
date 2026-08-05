@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
@@ -10,9 +9,12 @@ from tom_common.htmx_table import HTMXTableViewMixin
 from tom_across.forms import VisibilityPlotForm, ObservationFilterForm
 from tom_across.utils import get_observatory_name_id_map, visibility_from_instrument, observation_rows
 from tom_across.tables import ObservationTable
+from tom_across import __version__
+
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
@@ -45,6 +47,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
         context['empty_database'] = not context['object_list']
         context['target'] = Target.objects.get(id=self.kwargs['target_id'])
         context['filter_form'] = ObservationFilterForm(self.request.GET or None, queryset_data=full_rows)
+        context['version'] = __version__
         return context
 
 
@@ -52,7 +55,7 @@ def visibility_plot_view(request, pk):
     target = Target.objects.get(id=pk)
     if target.type != 'SIDEREAL':
         return render(request, 'tom_across/partials/visibility_plot.html', {'plot': None})
-    
+
     names = sorted(set(get_observatory_name_id_map().values()))
     hi_res = True
     observatory_choices = [(n, n) for n in names]
@@ -72,8 +75,12 @@ def visibility_plot_view(request, pk):
             hi_res = False
             logger.info(f'changed hi res to false {(date_range_end-date_range_begin)}')
     else:
-        observatory_list, date_range_begin, date_range_end = defaults['observatories'], defaults['begin'], defaults['end']
+        observatory_list = defaults['observatories']
+        date_range_begin, date_range_end = defaults['begin'], defaults['end']
 
-    context = visibility_from_instrument(target, observatory_list, date_range_begin = date_range_begin, date_range_end = date_range_end, hi_res = hi_res)
+    context = visibility_from_instrument(
+        target, observatory_list,
+        date_range_begin=date_range_begin, date_range_end=date_range_end, hi_res=hi_res
+        )
     context['form'] = form
     return render(request, 'tom_across/partials/visibility_plot.html', context)

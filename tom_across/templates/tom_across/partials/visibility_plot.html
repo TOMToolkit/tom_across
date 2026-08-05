@@ -4,7 +4,7 @@
     {{ plot_html|safe }}
 </div>
 
-<form hx-get="{% url 'across:visibility-plot' target.id %}"
+<form hx-get="{% url 'tom_across:visibility-plot' target.id %}"
       hx-target="#visibility-plot-wrapper"
       hx-swap="innerHTML"
       hx-indicator="#plot-spinner"
