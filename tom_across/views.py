@@ -59,7 +59,7 @@ def visibility_plot_view(request, pk):
     observatory_choices = [(n, n) for n in names]
     now = datetime.now()
 
-    default_observatories = ACROSS_DEFAULT_ARGS.get('VISIBILITY_OBSERVATORY_DEFAULTS') or ['JWST', 'HST']
+    default_observatories = list(ACROSS_DEFAULT_ARGS.get('VISIBILITY_OBSERVATORY_DEFAULTS') or ['JWST', 'HST'])
     defaults = {'observatories': default_observatories, 'begin': now, 'end': now + timedelta(hours=24)}
     form = VisibilityPlotForm(request.GET or defaults, observatory_choices=observatory_choices)
     if form.is_valid():
