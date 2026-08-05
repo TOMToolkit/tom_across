@@ -2,6 +2,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, HTML, Field
 from datetime import datetime, timedelta
+from django.conf import settings
 
 import logging
 
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class ObservationFilterForm(forms.Form):
+    cone_radius_init = getattr(settings, 'ACROSS_OBSERVATION_DEFAULT_ARGS').get('cone_search_radius', 0.1)
     start_date = forms.DateField(
         required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
         )
@@ -18,7 +20,7 @@ class ObservationFilterForm(forms.Form):
     observation_type = forms.CharField(required=False, label='Observation type', widget=forms.Select())
     instrument = forms.CharField(required=False, label='Instrument', widget=forms.Select())
     status = forms.CharField(required=False, label='Observation Status', widget=forms.Select())
-    cone_radius = forms.FloatField(required=False, label='Cone Radius')
+    cone_radius = forms.FloatField(required=False, initial=cone_radius_init, label='Cone Radius')
 
     def __init__(self, *args, **kwargs):
         qs_data = kwargs.pop('queryset_data', None)
