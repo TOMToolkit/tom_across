@@ -4,7 +4,6 @@ description = "A TOMToolkit ACROSS application."
 authors = [{name = "Moira Andrews", email = "mandrews@lco.global"}]
 license = {text = "GPL-3.0-or-later"}
 readme = "README.md"
-version = "0.0.0" # version supplied by poetry-dynamic-versioning
 dynamic = ["version"]
 requires-python = ">=3.10.0,<3.14"
 dependencies = [
@@ -14,6 +13,7 @@ dependencies = [
 
 [tool.poetry]
 packages = [{include = "tom_across"}]
+version = "0.0.0" # version supplied by poetry-dynamic-versioning
 
 [tool.poetry.requires-plugins]
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
