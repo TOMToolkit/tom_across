@@ -12,9 +12,9 @@ filter and query the ACROSS servers.
 ## Installation
 
 1. Install the package into your TOM environment:
-    ```bash
-    pip install tom-across
-   ```
+```bash
+pip install tom-across
+```
 
 2. In your project `settings.py`, add `tom_across` to your `INSTALLED_APPS` setting:
 
