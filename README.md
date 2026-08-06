@@ -19,7 +19,7 @@ filter and query the ACROSS servers.
 2. In your project `settings.py`, add `tom_across` to your `INSTALLED_APPS` setting:
 
 ```python
-    INSTALLED_APPS = TOMTOOKIT_INSTALLED_APPS + [
+INSTALLED_APPS = TOMTOOKIT_INSTALLED_APPS + [
     'custom_code',
     ...
     'tom_across',
