@@ -19,7 +19,7 @@ version = "0.0.0" # version supplied by poetry-dynamic-versioning
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 
 [tool.poetry.group.coverage.dependencies]
-coverage = ">=6,<8" # coveralls needs ~6 even though 7.3.2 is latest
+coverage = ">=7.15.4,<8" # coveralls needs ~6 even though 7.3.2 is latest
 coveralls = ">=3,<5"
 
 [tool.poetry.group.lint.dependencies]
