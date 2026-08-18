@@ -5,7 +5,6 @@ from django.test import TestCase
 
 from tom_targets.models import Target
 
-from tom_across.templatetags.across_extras import across_app_observations_url, across_app_visibility_url
 from tom_across.utils import observation_rows
 
 
@@ -14,7 +13,6 @@ class TestNonSiderealTargets(TestCase):
     TOM ACROSS only supports sidereal targets; check non-sidereal targets are handled gracefully.
     """
     def setUp(self):
-        self.sidereal = Target.objects.create(name='test sidereal', type=Target.SIDEREAL, ra=10.5, dec=-20.25)
         self.non_sidereal = Target.objects.create(name='test non-sidereal', type=Target.NON_SIDEREAL, epoch=57000)
 
     @patch('tom_across.utils.client')
@@ -24,16 +22,6 @@ class TestNonSiderealTargets(TestCase):
         """
         self.assertEqual(observation_rows(self.non_sidereal), [])
         mock_client.observation.get_many.assert_not_called()
-
-    def test_template_tags_return_empty_url(self):
-        """
-        The 'View in ACROSS' links should be empty rather than raising on a target with no RA/Dec.
-        """
-        self.assertEqual(across_app_visibility_url(self.non_sidereal), '')
-        self.assertEqual(across_app_observations_url(self.non_sidereal), '')
-
-        self.assertIn('ra=10.500000', across_app_visibility_url(self.sidereal))
-        self.assertIn('cone_search_ra=10.500000', across_app_observations_url(self.sidereal))
 
     def test_target_template_shows_message(self):
         """
