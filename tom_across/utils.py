@@ -50,7 +50,7 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
     observatory_name_cache = get_observatory_name_id_map()
 
     fig = make_subplots(rows=len(inst_ids), cols=1, shared_xaxes=True, vertical_spacing=0)
-    color = ["#4C9CA8", "#B7E1E7"]
+    color = ['#4C9CA8', '#B7E1E7']
 
     for i, (selected_name, inst_id) in enumerate(selected_observatories):
         obs_vis_windows = joint.observatory_visibility_windows[inst_id]
@@ -69,15 +69,15 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
                         observatory_window.begin.datetime
                     ],
                     y=[0, 0, 1, 1, 0],
-                    fill="toself",
+                    fill='toself',
                     fillcolor=color[1],
                     line=dict(color=color[0], width=3),
                     opacity=0.5,
-                    mode="lines",
-                    hoverinfo="text",
-                    text=f"{observatory_name}<br>{observatory_window.begin.datetime}"
-                         f" – {observatory_window.end.datetime}"
-                         f"<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours",
+                    mode='lines',
+                    hoverinfo='text',
+                    text=f'{observatory_name}<br>{observatory_window.begin.datetime}'
+                         f' – {observatory_window.end.datetime}'
+                         f'<br>Max Visibility: {observatory_max_vis/3600:0.2f} Hours',
                     showlegend=False
                 ),
                 row=i+1,
@@ -87,9 +87,9 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
         if not obs_vis_windows:
             fig.add_trace(go.Scatter(
                 x=[date_range_begin, date_range_end], y=[0, 0],
-                mode="lines",
-                line=dict(color="rgba(0,0,0,0)"),
-                hoverinfo="skip",
+                mode='lines',
+                line=dict(color='rgba(0,0,0,0)'),
+                hoverinfo='skip',
                 showlegend=False,
             ), row=i + 1, col=1)
 
@@ -106,7 +106,7 @@ def visibility_from_instrument(target, observatory_list, date_range_begin=None, 
         font=dict(size=14),
     )
 
-    plot_html = to_html(fig, full_html=False, include_plotlyjs=False, config={"responsive": True})
+    plot_html = to_html(fig, full_html=False, include_plotlyjs=False, config={'responsive': True})
 
     cacheable_context = {
         'observatory_list': observatory_list,
@@ -122,7 +122,7 @@ def get_observatory_name_id_map():
     Build name/short_name to observatory_id map.
     Cached for 24 hours, refreshed on cache miss.
     """
-    cache_key = "across_observatory_id_name_map"
+    cache_key = 'across_observatory_id_name_map'
     data = cache.get(cache_key)
     if data is None:
         print('GETTING OBS IDS TO FROM ACROSS')
@@ -137,7 +137,7 @@ def get_inst_ids_from_observatory_name():
     telescope, and instrument to instrument_id map.
     Cached for 24 hours, refreshed on cache miss.
     """
-    cache_key = "across_instrument_id_observatory_map"
+    cache_key = 'across_instrument_id_observatory_map'
     data = cache.get(cache_key)
 
     if data is None:
@@ -173,9 +173,9 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
 
     kwargs['cone_search_ra'] = target.ra
     kwargs['cone_search_dec'] = target.dec
-    cone_search_from_settings = kwargs.get("cone_search_radius")
+    cone_search_from_settings = kwargs.get('cone_search_radius')
     if not cone_search_from_settings:
-        kwargs["cone_search_radius"] = 0.1
+        kwargs['cone_search_radius'] = 0.1
 
     if start_date:
         kwargs['date_range_begin'] = start_date
@@ -195,11 +195,11 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
         kwargs['cone_search_radius'] = cone_search_radius
 
     key_raw = (
-        f"{target.id}-{start_date}-{end_date}-{status}-"
-        f"{inst_id}-{obs_type}-{cone_search_radius}"
+        f'{target.id}-{start_date}-{end_date}-{status}-'
+        f'{inst_id}-{obs_type}-{cone_search_radius}'
         )
 
-    cache_key = "across_obs_" + hashlib.md5(key_raw.encode()).hexdigest()
+    cache_key = 'across_obs_' + hashlib.md5(key_raw.encode()).hexdigest()
     rows = cache.get(cache_key)
     if rows:
         logger.info('[OBSERVATION TABLE] Pulling from cache with key')
@@ -243,7 +243,7 @@ def get_across_instrument_ids():
     This is used to look up instruments by ID on other requests to the ACROSS API.
     Cached for 24 hours, refreshed on cache miss.
     """
-    cache_key = "across_instrument_id_map"
+    cache_key = 'across_instrument_id_map'
     data = cache.get(cache_key)
 
     if data is None:
@@ -261,7 +261,7 @@ def get_across_observatory_telescope_name_map():
     Build a dictionary of ACROSS observatory names and their corresponding telescope names.
     Cached for 24 hours, refreshed on cache miss.
     """
-    cache_key = "across_observatory_telescope_name_map"
+    cache_key = 'across_observatory_telescope_name_map'
     data = cache.get(cache_key)
 
     if data is None:
