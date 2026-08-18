@@ -11,6 +11,8 @@ DEFAULT_CONE_SEARCH_RADIUS = 0.1
 
 @register.simple_tag
 def across_app_visibility_url(target, hi_res=True):
+    if target.ra is None or target.dec is None:
+        return ''
     base = getattr(settings, 'ACROSS_APP_URL', DEFAULT_ACROSS_APP_URL)
     query = urlencode({
         'ra': f'{target.ra:f}',
@@ -22,6 +24,8 @@ def across_app_visibility_url(target, hi_res=True):
 
 @register.simple_tag
 def across_app_observations_url(target, radius=DEFAULT_CONE_SEARCH_RADIUS):
+    if target.ra is None or target.dec is None:
+        return ''
     base = getattr(settings, 'ACROSS_APP_URL', DEFAULT_ACROSS_APP_URL)
     across_defaults = getattr(settings, 'ACROSS_DEFAULT_ARGS', None) or {}
     obs_defaults = across_defaults.get('OBSERVATION_TABLE_DEFAULTS') or {}

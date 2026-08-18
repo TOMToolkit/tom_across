@@ -1,4 +1,9 @@
 {% load across_extras %}
+{% if target.type != 'SIDEREAL' %}
+<div class="card">
+    <div class="card-body text-muted">TOM ACROSS is only configured for Sidereal targets</div>
+</div>
+{% else %}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>Observations</span>
@@ -19,13 +24,11 @@
 <div class="card mt-3">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>Visibility</span>
-        {% if target.type == 'SIDEREAL' %}
         <a class="btn btn-sm btn-primary"
            href="{% across_app_visibility_url target %}"
            target="_blank" rel="noopener noreferrer">
             View in ACROSS
         </a>
-        {% endif %}
     </div>
     <div class="card-body" id="visibility-plot-wrapper"
          hx-get="{% url 'tom_across:visibility-plot' target.id %}"
@@ -35,5 +38,6 @@
         Loading visibility...
     </div>
 </div>
+{% endif %}
 
 <p><em>TOM Toolkit Module (<a href="https://github.com/TOMToolkit/tom_across" target="_blank">tom_across</a>) version {{ version }}</em></p>

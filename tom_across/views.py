@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic.list import ListView
 
@@ -7,7 +8,7 @@ from tom_targets.models import Target
 from tom_common.htmx_table import HTMXTableViewMixin
 from tom_across.forms import VisibilityPlotForm, ObservationFilterForm
 from tom_across.utils import (
-    get_observatory_name_id_map, visibility_from_instrument, observation_rows, ACROSS_DEFAULT_ARGS,
+    get_observatory_name_id_map, visibility_from_instrument, observation_rows, ACROSS_DEFAULT_ARGS
 )
 from tom_across.tables import ObservationTable
 
@@ -18,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 class ObservationTableView(HTMXTableViewMixin, ListView):
     table_class = ObservationTable
-    template_name = "tom_across/target_across.html"
+    template_name = 'tom_across/target_across.html'
     paginate_by = 10
     model = None
 
     def get_queryset(self):
-        target = Target.objects.get(id=self.kwargs["target_id"])
+        target = Target.objects.get(id=self.kwargs['target_id'])
         form = ObservationFilterForm(self.request.GET or None)
         filters = {}
         if form.is_valid():
@@ -40,7 +41,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(HTMXTableViewMixin, self).get_context_data(**kwargs)
-        target = Target.objects.get(id=self.kwargs["target_id"])
+        target = Target.objects.get(id=self.kwargs['target_id'])
         full_rows = observation_rows(target)
         context['record_count'] = context['paginator'].count
         context['empty_database'] = not context['object_list']
@@ -52,7 +53,7 @@ class ObservationTableView(HTMXTableViewMixin, ListView):
 def visibility_plot_view(request, pk):
     target = Target.objects.get(id=pk)
     if target.type != 'SIDEREAL':
-        return render(request, 'tom_across/partials/visibility_plot.html', {'plot': None})
+        return HttpResponse('TOM ACROSS is only configured for Sidereal targets')
 
     names = sorted(set(get_observatory_name_id_map().values()))
     hi_res = True
