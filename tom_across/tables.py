@@ -10,27 +10,27 @@ logger = logging.getLogger(__name__)
 class ObservationTable(HTMXTable):
     observatory = tables.Column()
     type = tables.Column()
-    date = tables.DateTimeColumn(format="Y-m-d H:i")
-    filter_name = tables.Column(verbose_name="Filter")
-    exptime = tables.Column(verbose_name="Exp (s)", attrs={"th": {"class": "text-nowrap"}})
+    date = tables.DateTimeColumn(format='Y-m-d H:i')
+    filter_name = tables.Column(verbose_name='Filter')
+    exptime = tables.Column(verbose_name='Exp (s)', attrs={'th': {'class': 'text-nowrap'}})
     status = tables.Column()
 
     selection = None
 
     class Meta(HTMXTable.Meta):
         model = None
-        empty_text = "No observations found"
+        empty_text = 'No observations found'
         attrs = {
             **HTMXTable.Meta.attrs,
-            "hx-target": "#observation-table-wrapper",
-            "hx-swap": "outerHTML"
+            'hx-target': '#observation-table-wrapper',
+            'hx-swap': 'outerHTML'
         }
 
     partial_template_name = 'tom_across/partials/observation_table_partial.html'
 
     def get_table_action_url(self):
-        target_id = self.request.resolver_match.kwargs.get("target_id")
-        return reverse("tom_across:observation-table", kwargs={"target_id": target_id})
+        target_id = self.request.resolver_match.kwargs.get('target_id')
+        return reverse('tom_across:observation-table', kwargs={'target_id': target_id})
 
     def render_observatory(self, value, record):
         instrument = record.get('instrument') if isinstance(record, dict) else getattr(record, 'instrument', None)
@@ -40,6 +40,6 @@ class ObservationTable(HTMXTable):
 
     def render_exptime(self, value):
         try:
-            return f"{float(value):.1f}"
+            return f'{float(value):.1f}'
         except (ValueError, TypeError):
             return value

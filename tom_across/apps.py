@@ -8,8 +8,8 @@ class TomAppConfig(AppConfig):
     verbose_name = 'An ACROSS App for the TOM Toolkit'
 
     def target_detail_tabs(self):
-        return [{"label": "ACROSS", "partial": "tom_across/target_across.html",
-                 "context": "tom_across.templatetags.across_extras.version_context"}]
+        return [{'label': 'ACROSS', 'partial': 'tom_across/target_across.html',
+                 'context': 'tom_across.templatetags.across_extras.version_context'}]
 
     def include_url_paths(self):
         urlpatterns = [
