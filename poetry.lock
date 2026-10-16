@@ -36,15 +36,13 @@ urllib3 = ">=2.1.0,<3.0.0"
 
 [[package]]
 name = "across-tools"
-version = "1.6.1"
+version = "1.6.2.dev1"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-files = [
-    {file = "across_tools-1.6.1-py3-none-any.whl", hash = "sha256:e794fae9d81610d2abe6fe9f9b4dbc94bec9a09ed87f1a2fdc06a47f0ddf23b3"},
-    {file = "across_tools-1.6.1.tar.gz", hash = "sha256:5400c890b5c42eac4259cd6827c01c12cc55129952c2fee739e846e14eefdd51"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 astropy = ">=5"
@@ -61,6 +59,12 @@ sgp4 = ">=2.2"
 shapely = ">=2.0.4"
 spacetrack = ">=1.0.0"
 spiceypy = ">=6.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/NASA-ACROSS/across-tools"
+reference = "170-add-functionality-to-link-observations-to-archival-data-pages"
+resolved_reference = "75df1a6868845b9027451efbc3585787b95a34d9"
 
 [[package]]
 name = "alerce"
