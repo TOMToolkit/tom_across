@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 class ObservationFilterForm(forms.Form):
     _across_defaults = getattr(settings, 'ACROSS_DEFAULT_ARGS', None) or {}
     _obs_defaults = _across_defaults.get('OBSERVATION_TABLE_DEFAULTS') or {}
-    cone_radius_init = _obs_defaults.get('cone_search_radius', 0.1)
 
     start_date = forms.DateField(
         required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
@@ -23,7 +22,6 @@ class ObservationFilterForm(forms.Form):
     observation_type = forms.CharField(required=False, label='Observation type', widget=forms.Select())
     instrument = forms.CharField(required=False, label='Instrument', widget=forms.Select())
     status = forms.CharField(required=False, label='Observation Status', widget=forms.Select())
-    cone_radius = forms.FloatField(required=False, initial=cone_radius_init, label='Cone Radius')
 
     def __init__(self, *args, **kwargs):
         qs_data = kwargs.pop('queryset_data', None)
@@ -73,7 +71,6 @@ class ObservationFilterForm(forms.Form):
                 Column('observation_type', css_class='col-md-4'),
                 Column('instrument', css_class='col-md-4'),
                 Column('status', css_class='col-md-4'),
-                Column('cone_radius', css_class='col-md-4'),
                 Column(
                     HTML(
                         '<button type="submit" class="btn btn-outline-primary w-100">'
