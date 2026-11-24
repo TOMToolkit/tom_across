@@ -160,22 +160,26 @@ def get_inst_ids_from_observatory_name():
     return data
 
 
-def observation_rows(target, start_date=None, end_date=None, status=None, instrument=None,
-                     obs_type=None, cone_search_radius=None):
+def observation_rows(target, start_date=None, end_date=None, status=None, instrument=None, obs_type=None):
     if target.type != 'SIDEREAL':
         logger.info('[OBSERVATION TABLE] TOM ACROSS is only configured for Sidereal targets, skipping ACROSS query')
         return []
 
-    kwargs = {'status': 'planned', 'cone_search_radius': 0.1,
-              **(ACROSS_DEFAULT_ARGS.get('OBSERVATION_TABLE_DEFAULTS') or {})}
+    observation_table_defaults = ACROSS_DEFAULT_ARGS.get('OBSERVATION_TABLE_DEFAULTS') or {}
+    if "observatory_names" in observation_table_defaults:
+        observatory_ids = [
+            obs_id for name in observation_table_defaults["observatory_names"]
+            for obs_id, obs_name in get_observatory_name_id_map().items()
+            if name == obs_name
+        ]
+        observation_table_defaults["observatory_ids"] = observatory_ids
+        observation_table_defaults.pop("observatory_names")
+    kwargs = {'status': 'planned', **observation_table_defaults}
 
     instrument_cache = get_across_instrument_ids()
 
-    kwargs['cone_search_ra'] = target.ra
-    kwargs['cone_search_dec'] = target.dec
-    cone_search_from_settings = kwargs.get('cone_search_radius')
-    if not cone_search_from_settings:
-        kwargs['cone_search_radius'] = 0.1
+    kwargs['ra'] = target.ra
+    kwargs['dec'] = target.dec
 
     if start_date:
         kwargs['date_range_begin'] = start_date
@@ -191,12 +195,10 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
                 kwargs['instrument_ids'] = [inst_id]
     if obs_type:
         kwargs['type'] = obs_type
-    if cone_search_radius:
-        kwargs['cone_search_radius'] = cone_search_radius
 
     key_raw = (
         f'{target.id}-{start_date}-{end_date}-{status}-'
-        f'{inst_id}-{obs_type}-{cone_search_radius}'
+        f'{inst_id}-{obs_type}'
         )
 
     cache_key = 'across_obs_' + hashlib.md5(key_raw.encode()).hexdigest()
@@ -208,7 +210,7 @@ def observation_rows(target, start_date=None, end_date=None, status=None, instru
         logger.info('[OBSERVATION TABLE] Query not in cache, getting from ACROSS client...')
     rows = []
     try:
-        results = client.observation.get_many(**kwargs)
+        results = client.observation.contains_point(**kwargs)
         for obs in results.items:
             inst, tele = instrument_cache[obs.instrument_id]
 
