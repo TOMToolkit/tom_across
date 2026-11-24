@@ -5,7 +5,7 @@ from tom_across import __version__
 
 register = template.Library()
 
-DEFAULT_ACROSS_APP_URL = 'https://app.across.sciencecloud.nasa.gov'
+DEFAULT_ACROSS_APP_URL = 'https://science.data.nasa.gov/across/app'
 DEFAULT_CONE_SEARCH_RADIUS = 0.1
 
 
